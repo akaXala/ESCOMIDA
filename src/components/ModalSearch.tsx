@@ -3,7 +3,7 @@
 import * as React from 'react';
 
 // Componentes MUI
-import { ThemeProvider, CssBaseline, useMediaQuery } from '@mui/material';
+import { ThemeProvider, CssBaseline, useMediaQuery, Modal, Button, TextField } from '@mui/material';
 
 // Tema personalizado
 import { getCustomTheme } from '@/components/MUI/CustomTheme';
@@ -21,7 +21,15 @@ export default function ModalSearch() {
 
     return (
         <ThemeProvider theme={theme}>
-
+            <CssBaseline />
+                <Button onClick={handleOpen}>Open modal</Button>
+                <Modal
+                    keepMounted
+                    open={open}
+                    onClose={handleClose}
+                >
+                    <p>a</p>
+                </Modal>
         </ThemeProvider>
     );
 }

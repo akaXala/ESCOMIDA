@@ -1,10 +1,10 @@
-// Componente custom
-import FixedNavBar from '@/components/FixedNavBar';
+// Componente MUI
+import { Box } from "@mui/material";
 
 export default function Home() {
   return (
-    <div>
-      <FixedNavBar />
-    </div>
+    <Box marginTop={14}>
+      <p>Hola</p>
+    </Box>
   );
 }

@@ -17,7 +17,11 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 
 type NavItem = 'home' | 'search' | 'orders' | 'account';
 
-const FixedNavBar: React.FC = () => {
+interface FixedNavBarProps {
+  onAccountClick: () => void;
+}
+
+const FixedNavBar: React.FC<FixedNavBarProps> = ({ onAccountClick }) => {
     // Detecta si el sistema está en dark mode
     const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
 
@@ -121,26 +125,27 @@ const FixedNavBar: React.FC = () => {
             sx={getNavButtonStyle('home')}
             startIcon={<HomeIcon />}
           >
-            Home
+            Inicio
           </Button>
           <Button
             sx={getNavButtonStyle('search')}
             startIcon={<SearchIcon />}
           >
-            Search
+            Buscar
           </Button>
           <Button
             onClick={handleOrdersClick}
             sx={getNavButtonStyle('orders')}
             startIcon={<ListAltIcon />}
           >
-            Orders
+            Ordenes
           </Button>
           <Button
             sx={getNavButtonStyle('account')}
             startIcon={<AccountCircleIcon />}
+            onClick={onAccountClick}
           >
-            Account
+            Cuenta
           </Button>
         </Toolbar>
       </AppBar>

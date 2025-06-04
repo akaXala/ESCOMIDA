@@ -15,110 +15,115 @@ import {
     Typography,
     IconButton,
     Avatar,
-    Divider // Importado para usar explícitamente si es necesario
+    Divider
 } from '@mui/material';
 
 // Iconos MUI
 import CloseIcon from '@mui/icons-material/Close';
-import PersonIcon from '@mui/icons-material/Person'; // Para Avatar de usuario logueado
+import PersonIcon from '@mui/icons-material/Person'; // Fallback para Avatar
 import AccountCircleIcon from '@mui/icons-material/AccountCircle'; // Para Avatar de invitado
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts'; // Para "Cuenta" (logueado)
-import LoginIcon from '@mui/icons-material/Login'; // Para "Cuenta" (deslogueado, lleva a login)
+import LoginIcon from '@mui/icons-material/Login'; // Para "Iniciar Sesión"
 import ShoppingBagIcon from '@mui/icons-material/ShoppingBag'; // Para "Mis pedidos"
 import SupportAgentIcon from '@mui/icons-material/SupportAgent'; // Para "Soporte"
 import LogoutIcon from '@mui/icons-material/Logout'; // Para "Cerrar Sesión"
 import PersonAddIcon from '@mui/icons-material/PersonAdd'; // Para "Registrarse"
+
+// Navegación Next.js
+import { useRouter } from 'next/navigation';
+
+// Clerk
+import { useUser, useAuth } from '@clerk/nextjs';
 
 interface RightDrawerProps {
   open: boolean;
   setOpen: (open: boolean) => void;
 }
 
-// Simulación de datos de usuario
-interface UserData {
-    name: string;
-    email: string;
-    avatarLetter?: string; // Para el fallback del Avatar
-}
-
 export default function RightDrawer({ open, setOpen }: RightDrawerProps) {
-    const [isLoggedIn, setIsLoggedIn] = React.useState(false); // Estado de sesión
-    const [currentUser, setCurrentUser] = React.useState<UserData | null>(null);
+    const router = useRouter();
+    const { isSignedIn, signOut } = useAuth();
+    const { user, isLoaded } = useUser();
 
     const toggleDrawer = (newOpen: boolean) => () => {
         setOpen(newOpen);
     };
 
-    // Simulación de inicio/cierre de sesión
-    const handleToggleLoginState = () => {
-        if (isLoggedIn) {
-            setIsLoggedIn(false);
-            setCurrentUser(null);
-        } else {
-            setIsLoggedIn(true);
-            setCurrentUser({
-                name: "Arath Jimenez Xala", // Nombre más natural
-                email: "jimenez.xala.arath@gmail.com", // Email principal
-                avatarLetter: "A"
-            });
-        }
-        setOpen(false); // Cerrar drawer después de cambiar estado de sesión
+    const handleSignOut = async () => {
+        await signOut();
+        router.push('/'); // Redirect to homepage after sign out
+        setOpen(false);
     };
 
     const handleMenuItemClick = (actionKey: string) => {
-        console.log(`Action: ${actionKey}`);
-        // Aquí iría la lógica de navegación o acción específica
-        // Por ejemplo, si es 'myOrders' y no está logueado, redirigir a login
-        if (actionKey === 'myOrders' && !isLoggedIn) {
-            alert("Por favor, inicia sesión para ver tus pedidos.");
-            // Lógica para redirigir a login
-            setOpen(false);
-            return;
-        }
-        if (actionKey === 'loginPrompt') {
-            // Lógica para mostrar modal de login o redirigir
-            alert("Redirigiendo a inicio de sesión...");
-            // Para demostración, simulamos un login:
-            // handleToggleLoginState(); // No llamar aquí directamente si cierra el drawer
-            setOpen(false);
-            return;
-        }
-         if (actionKey === 'signUp') {
-            alert("Redirigiendo a la página de registro...");
-        }
+        setOpen(false); // Close drawer on any item click
 
-        setOpen(false); // Cerrar el drawer para otras acciones
+        switch (actionKey) {
+            case 'userAccount':
+                router.push('/user-profile'); // Clerk's default user profile page
+                break;
+            case 'signIn':
+                router.push('/sign-in');
+                break;
+            case 'signUp':
+                router.push('/sign-up');
+                break;
+            case 'myOrders':
+                if (!isSignedIn) {
+                    // Optionally, pass a redirect URL to Clerk's sign-in page
+                    router.push('/sign-in?redirect_url=/my-orders');
+                } else {
+                    router.push('/my-orders'); // Placeholder for actual orders page
+                }
+                break;
+            case 'support':
+                router.push('/support'); // Placeholder for actual support page
+                break;
+            default:
+                console.log(`Action: ${actionKey}`);
+        }
     };
 
+    // Wait for Clerk to load before rendering anything
+    if (!isLoaded) {
+        return null; // Or a loading spinner
+    }
 
     const menuOptions = [
         {
-            text: 'Cuenta',
-            icon: isLoggedIn ? <ManageAccountsIcon /> : <LoginIcon />,
-            actionKey: isLoggedIn ? 'userAccount' : 'loginPrompt',
-            requiresLogin: false, // La opción es visible, la acción cambia
+            text: isSignedIn ? 'Cuenta' : 'Iniciar Sesión',
+            icon: isSignedIn ? <ManageAccountsIcon /> : <LoginIcon />,
+            actionKey: isSignedIn ? 'userAccount' : 'signIn',
+            show: true, // Always show this option
         },
+        // Add "Registrarse" option only if not signed in
+        ...(!isSignedIn ? [{
+            text: 'Registrarse',
+            icon: <PersonAddIcon />,
+            actionKey: 'signUp',
+            show: true,
+        }] : []),
         {
             text: 'Mis pedidos',
             icon: <ShoppingBagIcon />,
             actionKey: 'myOrders',
-            requiresLogin: true, // La acción requerirá login si no está autenticado
+            show: true, // Show always, behavior changes based on login state
         },
         {
             text: 'Soporte',
             icon: <SupportAgentIcon />,
             actionKey: 'support',
-            requiresLogin: false,
+            show: true, // Always show this option
         },
     ];
 
     const DrawerList = (
         <Box
             sx={{
-                width: { xs: '85vw', sm: 300, md: 320 }, // Ancho responsivo
-                height: '100%', // Ocupa toda la altura del Drawer
+                width: { xs: '85vw', sm: 300, md: 320 },
+                height: '100%',
                 display: 'flex',
-                flexDirection: 'column', // Organiza contenido verticalmente
+                flexDirection: 'column',
             }}
             role="presentation"
         >
@@ -129,11 +134,11 @@ export default function RightDrawer({ open, setOpen }: RightDrawerProps) {
                     justifyContent: 'space-between',
                     alignItems: 'center',
                     p: 2,
-                    flexShrink: 0, // Evita que se encoja
+                    flexShrink: 0,
                 }}
             >
                 <Typography variant="h6" component="div">
-                    {isLoggedIn && currentUser ? "Tu Cuenta" : "Menú"}
+                    {isSignedIn && user ? "Tu Cuenta" : "Menú"}
                 </Typography>
                 <IconButton onClick={toggleDrawer(false)} aria-label="Cerrar menú">
                     <CloseIcon />
@@ -143,16 +148,19 @@ export default function RightDrawer({ open, setOpen }: RightDrawerProps) {
 
             {/* 2. Sección de Perfil (Condicional) */}
             <Box sx={{ textAlign: 'center', p: { xs: 2, sm: 3 }, flexShrink: 0 }}>
-                {isLoggedIn && currentUser ? (
+                {isSignedIn && user ? (
                     <>
-                        <Avatar sx={{ width: 56, height: 56, mb: 1.5, mx: 'auto', bgcolor: 'primary.main' }}>
-                            {currentUser.avatarLetter || <PersonIcon />}
+                        <Avatar
+                            src={user.imageUrl || undefined}
+                            sx={{ width: 56, height: 56, mb: 1.5, mx: 'auto', bgcolor: 'primary.main' }}
+                        >
+                            {!user.imageUrl && (user.firstName?.charAt(0) || <PersonIcon />)}
                         </Avatar>
                         <Typography variant="subtitle1" sx={{ fontWeight: 'bold', wordBreak: 'break-word' }}>
-                            {currentUser.name}
+                            {user.fullName || user.firstName || "Usuario"}
                         </Typography>
                         <Typography variant="caption" color="text.secondary" sx={{ wordBreak: 'break-word' }}>
-                            {currentUser.email}
+                            {user.primaryEmailAddress?.emailAddress || "No email"}
                         </Typography>
                     </>
                 ) : (
@@ -171,10 +179,10 @@ export default function RightDrawer({ open, setOpen }: RightDrawerProps) {
             </Box>
             <Divider />
 
-            {/* 3. Lista de Opciones (Cuerpo principal que puede hacer scroll) */}
+            {/* 3. Lista de Opciones */}
             <Box sx={{ flexGrow: 1, overflowY: 'auto' }}>
                 <List sx={{ px: 1, pt: 1 }}>
-                    {menuOptions.map((item) => (
+                    {menuOptions.filter(item => item.show).map((item) => (
                         <ListItem key={item.text} disablePadding>
                             <ListItemButton onClick={() => handleMenuItemClick(item.actionKey)}>
                                 <ListItemIcon sx={{ minWidth: 40 }}>{item.icon}</ListItemIcon>
@@ -187,23 +195,23 @@ export default function RightDrawer({ open, setOpen }: RightDrawerProps) {
 
             {/* 4. Pie de Drawer (Botón condicional) */}
             <Box sx={{ p: 2, mt: 'auto', flexShrink: 0, borderTop: (theme) => `1px solid ${theme.palette.divider}` }}>
-                {isLoggedIn ? (
+                {isSignedIn ? (
                     <Button
                         fullWidth
                         variant="outlined"
                         startIcon={<LogoutIcon />}
-                        onClick={handleToggleLoginState} // Cierra sesión
+                        onClick={handleSignOut}
                     >
                         Cerrar Sesión
                     </Button>
                 ) : (
-                    <Button
+                    <Button // When not logged in, this button takes to Sign In
                         fullWidth
-                        variant="contained" // Botón principal para registrarse
-                        startIcon={<PersonAddIcon />}
-                        onClick={() => handleMenuItemClick('signUp')} // Acción para registrarse
+                        variant="contained"
+                        startIcon={<LoginIcon />}
+                        onClick={() => handleMenuItemClick('signIn')}
                     >
-                        Registrarse
+                        Iniciar Sesión Rápido
                     </Button>
                 )}
             </Box>
@@ -211,20 +219,13 @@ export default function RightDrawer({ open, setOpen }: RightDrawerProps) {
     );
 
     return (
-        <div>
-            {/* Botón de prueba para simular login/logout */}
-            <Button onClick={handleToggleLoginState} sx={{ ml: 2 }}>
-                {isLoggedIn ? "Simular Logout" : "Simular Login"}
-            </Button>
-
-            <Drawer
-                anchor="right" // Puedes cambiarlo a "right"
-                open={open}
-                onClose={toggleDrawer(false)}
-                sx={{ zIndex: 1400 }}
-            >
-                {DrawerList}
-            </Drawer>
-        </div>
+        <Drawer
+            anchor="right"
+            open={open}
+            onClose={toggleDrawer(false)}
+            sx={{ zIndex: (theme) => theme.zIndex.drawer + 2 }} // Ensure drawer is above other Clerk modals if any
+        >
+            {DrawerList}
+        </Drawer>
     );
 }

@@ -8,6 +8,9 @@ import { Typography, AppBar, Toolbar, Button, Box, Badge, Divider, CssBaseline, 
 // Tema personalizado
 import { getCustomTheme } from '@/components/MUI/CustomTheme';
 
+// Navegación Next.js
+import { useRouter } from 'next/navigation';
+
 // Iconos MUI
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import HomeIcon from '@mui/icons-material/Home';
@@ -15,13 +18,17 @@ import SearchIcon from '@mui/icons-material/Search';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 
+// Componente custom
+import ModalSearch from '@/components/ModalSearch';
+
 type NavItem = 'home' | 'search' | 'orders' | 'account';
 
 interface FixedNavBarProps {
   onAccountClick: () => void;
+  onSearchClick: () => void; // Agrega esta prop
 }
 
-const FixedNavBar: React.FC<FixedNavBarProps> = ({ onAccountClick }) => {
+const FixedNavBar: React.FC<FixedNavBarProps> = ({ onAccountClick, onSearchClick }) => {
     // Detecta si el sistema está en dark mode
     const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
 
@@ -34,6 +41,8 @@ const FixedNavBar: React.FC<FixedNavBarProps> = ({ onAccountClick }) => {
     const logoImageUrl = "/favicon.webp";
     const cartItemCount = 5;
 
+    const router = useRouter();
+
     const [selectedTab, setSelectedTab] = useState<NavItem>('home');
 
     // Funciones temporales
@@ -41,8 +50,14 @@ const FixedNavBar: React.FC<FixedNavBarProps> = ({ onAccountClick }) => {
     const handleCartClick = () => console.log("Carrito clickeado!");
 
     // Funciones para cambio de color de selector
-    const handleHomeClick = () => setSelectedTab('home');
-    const handleOrdersClick = () => setSelectedTab('orders');
+    const handleHomeClick = () => {
+      setSelectedTab('home');
+      router.push("/");
+    };
+    const handleOrdersClick = () => {
+      setSelectedTab('orders');
+      router.push("/ordenes")
+    };
 
     // Colores de diseño
     const buttonHoverStyle = { '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.08)' } };
@@ -130,6 +145,7 @@ const FixedNavBar: React.FC<FixedNavBarProps> = ({ onAccountClick }) => {
           <Button
             sx={getNavButtonStyle('search')}
             startIcon={<SearchIcon />}
+            onClick={onSearchClick}
           >
             Buscar
           </Button>

@@ -15,7 +15,7 @@ export const getCustomTheme = (mode: 'light' | 'dark') => {
                     },
                     background: {
                         default: '#FDFDFD',
-                        paper: '#ffffff',
+                        paper: '#FDFDFD',
                     },
                 }
             : {
@@ -24,7 +24,7 @@ export const getCustomTheme = (mode: 'light' | 'dark') => {
                 },
                 background: {
                     default: '#10141C',
-                    paper: '#1e1e1e',
+                    paper: '#10141C',
                 },
             }),
         },

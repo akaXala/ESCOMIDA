@@ -15,7 +15,10 @@ import {
     Typography,
     IconButton,
     Avatar,
-    Divider
+    Divider,
+    ThemeProvider,
+    CssBaseline,
+    useMediaQuery
 } from '@mui/material';
 
 // Iconos MUI
@@ -32,6 +35,9 @@ import PersonAddIcon from '@mui/icons-material/PersonAdd'; // Para "Registrarse"
 // Navegación Next.js
 import { useRouter } from 'next/navigation';
 
+// Tema personalizado
+import { getCustomTheme } from '@/components/MUI/CustomTheme';
+
 // Clerk
 import { useUser, useAuth } from '@clerk/nextjs';
 
@@ -44,6 +50,9 @@ export default function RightDrawer({ open, setOpen }: RightDrawerProps) {
     const router = useRouter();
     const { isSignedIn, signOut } = useAuth();
     const { user, isLoaded } = useUser();
+
+    const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+    const theme = React.useMemo(() => getCustomTheme(prefersDarkMode ? 'dark' : 'light'), [prefersDarkMode]);
 
     const toggleDrawer = (newOpen: boolean) => () => {
         setOpen(newOpen);
@@ -124,6 +133,7 @@ export default function RightDrawer({ open, setOpen }: RightDrawerProps) {
                 height: '100%',
                 display: 'flex',
                 flexDirection: 'column',
+                bgcolor: (theme) => theme.palette.background.paper,
             }}
             role="presentation"
         >
@@ -152,7 +162,14 @@ export default function RightDrawer({ open, setOpen }: RightDrawerProps) {
                     <>
                         <Avatar
                             src={user.imageUrl || undefined}
-                            sx={{ width: 56, height: 56, mb: 1.5, mx: 'auto', bgcolor: 'primary.main' }}
+                            sx={{
+                                width: 56,
+                                height: 56,
+                                mb: 1.5,
+                                mx: 'auto',
+                                bgcolor: (theme) => theme.palette.primary.main,
+                                color: (theme) => theme.palette.getContrastText(theme.palette.primary.main),
+                            }}
                         >
                             {!user.imageUrl && (user.firstName?.charAt(0) || <PersonIcon />)}
                         </Avatar>
@@ -165,7 +182,16 @@ export default function RightDrawer({ open, setOpen }: RightDrawerProps) {
                     </>
                 ) : (
                     <>
-                        <Avatar sx={{ width: 56, height: 56, mb: 1.5, mx: 'auto' }}>
+                        <Avatar 
+                            sx={{
+                                width: 56,
+                                height: 56,
+                                mb: 1.5,
+                                mx: 'auto',
+                                bgcolor: (theme) => theme.palette.primary.main,
+                                color: (theme) => theme.palette.getContrastText(theme.palette.primary.main),
+                            }}
+                        >
                             <AccountCircleIcon fontSize="large" />
                         </Avatar>
                         <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
@@ -219,13 +245,16 @@ export default function RightDrawer({ open, setOpen }: RightDrawerProps) {
     );
 
     return (
-        <Drawer
-            anchor="right"
-            open={open}
-            onClose={toggleDrawer(false)}
-            sx={{ zIndex: (theme) => theme.zIndex.drawer + 2 }} // Ensure drawer is above other Clerk modals if any
-        >
-            {DrawerList}
-        </Drawer>
+        <ThemeProvider theme={theme}>
+            <CssBaseline />
+            <Drawer
+                anchor="right"
+                open={open}
+                onClose={toggleDrawer(false)}
+                sx={{ zIndex: (theme) => theme.zIndex.drawer + 2 }} // Ensure drawer is above other Clerk modals if any
+            >
+                {DrawerList}
+            </Drawer>
+        </ThemeProvider>
     );
 }

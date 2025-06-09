@@ -7,7 +7,7 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 Clona el repositorio.
 
 ```bash
-git clone https://github.com/akaXala/EXPOConfig.git
+git clone https://github.com/akaXala/ESCOMIDA.git
 ```
 
 Para el instalar y ejecutar el proyecto usamos **npm** o **yarn**.

@@ -25,10 +25,11 @@ type NavItem = 'home' | 'search' | 'orders' | 'account';
 
 interface FixedNavBarProps {
   onAccountClick: () => void;
-  onSearchClick: () => void; // Agrega esta prop
+  onSearchClick: () => void;
+  currentTab?: NavItem; // <-- Agrega esta prop opcional
 }
 
-const FixedNavBar: React.FC<FixedNavBarProps> = ({ onAccountClick, onSearchClick }) => {
+const FixedNavBar: React.FC<FixedNavBarProps> = ({ onAccountClick, onSearchClick, currentTab }) => {
     // Detecta si el sistema está en dark mode
     const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
 
@@ -43,7 +44,11 @@ const FixedNavBar: React.FC<FixedNavBarProps> = ({ onAccountClick, onSearchClick
 
     const router = useRouter();
 
-    const [selectedTab, setSelectedTab] = useState<NavItem>('home');
+    // Usa currentTab si está definido, si no usa el estado local
+    const [selectedTab, setSelectedTab] = useState<NavItem>(currentTab ?? 'home');
+    React.useEffect(() => {
+      if (currentTab) setSelectedTab(currentTab);
+    }, [currentTab]);
 
     // Funciones temporales
     const handleLogoClick = () => console.log("Logo clickeado!");

@@ -3,7 +3,7 @@
 import * as React from 'react';
 
 // Componentes MUI
-import { Box, Grid, ThemeProvider, CssBaseline, useMediaQuery } from "@mui/material";
+import { Box, Grid, ThemeProvider, CssBaseline, useMediaQuery, Typography } from "@mui/material";
 import { useTheme } from '@mui/material/styles'; // Import para usar el tema
 
 // Navegación Next.js
@@ -16,6 +16,7 @@ import SearchButton from '@/components/SearchButton';
 import ModalSearch from '@/components/ModalSearch';
 import Options from '@/components/Options';
 import ImageCarousel from '@/components/ImageCarousel';
+import DishCard from '@/components/DishCard';
 
 // Tema personalizado
 import { getCustomTheme } from '@/components/MUI/CustomTheme';
@@ -44,10 +45,31 @@ export default function Home() {
   // Detecta si el ancho de la pantalla corresponde a un móvil (breakpoint 'sm' de MUI)
   const isMobile = useMediaQuery(muiTheme.breakpoints.down('sm'));
 
+  // Estados para el modal y el drawer
   const [drawerOpen, setDrawerOpen] = React.useState(false);
   const [searchOpen, setSearchOpen] = React.useState(false);
 
+  // Estados para los alimentos
+  const [alimentos, setAlimentos] = React.useState<{ nombre: string; precio: number; kcal: number }[]>([]);
+
+  // Navegación
   const router = useRouter();
+
+  React.useEffect(() => {
+    const fetchAlimentos = async () => {
+      try {
+        const res = await fetch('/api/alimentos');
+        const data = await res.json();
+
+        if (data.success) { 
+          setAlimentos(data.data);
+        }
+      } catch (error) {
+        console.error("Error al cargar los alimentos: " + error);
+      }
+    };
+    fetchAlimentos();
+  }, []);
 
   // Componente que renderiza cada una de las opciones
   interface TipoAlimentoItem {
@@ -76,6 +98,7 @@ export default function Home() {
           <FixedNavBar
             onAccountClick={() => setDrawerOpen(true)}
             onSearchClick={() => setSearchOpen(true)}
+            currentTab="home"
           />
           <RightDrawer open={drawerOpen} setOpen={setDrawerOpen} />
           <SearchButton onClick={() => setSearchOpen(true)} />
@@ -116,7 +139,6 @@ export default function Home() {
           // Vista de Grid para Tablets y Escritorio
           <Grid container spacing={2} paddingX={5}>
             {TipoAlimento.map((item) => (
-              // Se usa la prop "item" y las props responsivas "sm", "md", "lg"
               <Grid size={1.2} key={item.nombre}>
                 {renderOptions(item)}
               </Grid>
@@ -125,6 +147,37 @@ export default function Home() {
         )}
 
         <ImageCarousel />
+        <Box>
+          <Typography variant="h5" sx={{ marginX: { xs: 1, sm: 5 } }}>
+            Los favoritos
+          </Typography>
+        </Box>
+        <Box
+          sx={{
+            display: 'flex',
+            overflowX: 'auto',
+            paddingY: 2,
+            marginX: { xs: 1, sm: 5 }, // Padding diferente para móvil y escritorio
+            gap: 2, // Espacio entre las tarjetas
+            '&::-webkit-scrollbar': { height: 8 },
+            '&::-webkit-scrollbar-thumb': {
+              backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)',
+              borderRadius: 4,
+            },
+            scrollbarWidth: 'none', // Oculta scrollbar en Firefox
+            msOverflowStyle: 'none', // Oculta scrollbar en IE/Edge (corregido)
+          }}
+        >
+          {alimentos.map((alimento) => (
+            <Box key={alimento.nombre} sx={{ flex: '0 0 auto' }}> {/* Contenedor para cada tarjeta */}
+              <DishCard
+                nombrePlatillo={alimento.nombre}
+                precio={alimento.precio}
+                calorias={alimento.kcal}
+              />
+            </Box>
+          ))}
+        </Box>
       </Box>
     </ThemeProvider>
   );

@@ -47,12 +47,21 @@ interface RightDrawerProps {
 }
 
 export default function RightDrawer({ open, setOpen }: RightDrawerProps) {
+    // Navegación de Next.js
     const router = useRouter();
+
+    // Clerk Authentication
     const { isSignedIn, signOut } = useAuth();
     const { user, isLoaded } = useUser();
 
     const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
     const theme = React.useMemo(() => getCustomTheme(prefersDarkMode ? 'dark' : 'light'), [prefersDarkMode]);
+
+    // Guarda el modo actual
+    const themeMode = prefersDarkMode ? 'dark' : 'light';
+
+    // Color del boton
+    const buttonColor = (themeMode == 'light') ? '#8e9fdd' : '#0334BA'; 
 
     const toggleDrawer = (newOpen: boolean) => () => {
         setOpen(newOpen);
@@ -116,7 +125,7 @@ export default function RightDrawer({ open, setOpen }: RightDrawerProps) {
             text: 'Mis pedidos',
             icon: <ShoppingBagIcon />,
             actionKey: 'myOrders',
-            show: true, // Show always, behavior changes based on login state
+            show: isSignedIn, // Solo mostrar si está loggeado
         },
         {
             text: 'Soporte',
@@ -224,7 +233,8 @@ export default function RightDrawer({ open, setOpen }: RightDrawerProps) {
                 {isSignedIn ? (
                     <Button
                         fullWidth
-                        variant="outlined"
+                        variant="contained"
+                        color="error"
                         startIcon={<LogoutIcon />}
                         onClick={handleSignOut}
                     >
@@ -234,6 +244,7 @@ export default function RightDrawer({ open, setOpen }: RightDrawerProps) {
                     <Button // When not logged in, this button takes to Sign In
                         fullWidth
                         variant="contained"
+                        sx={{ bgcolor: buttonColor}}
                         startIcon={<LoginIcon />}
                         onClick={() => handleMenuItemClick('signIn')}
                     >

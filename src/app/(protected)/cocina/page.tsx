@@ -1,26 +1,101 @@
 "use client";
 
-import { Button } from "@mui/material";
+import * as React from 'react';
+
+// Componentes MUI
+import { Button, ThemeProvider, CssBaseline, useMediaQuery, Typography, Box } from "@mui/material";
+// Sesiones Clerk
 import { useAuth } from "@clerk/nextjs";
+// Navegación Next.js
 import { useRouter } from "next/navigation";
+// Tema personalizado
+import { getCustomTheme } from '@/components/MUI/CustomTheme';
+
+// Iconos MUI
+import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu'; // Para "Preparar"
+import FormatListBulletedAddIcon from '@mui/icons-material/FormatListBulletedAdd'; // Para "Modificar menú del día"
+import MenuBookIcon from '@mui/icons-material/MenuBook'; // Para "Modificar menú"
+import LogoutIcon from '@mui/icons-material/Logout'; // Para "Cerrar Sesión"
 
 export default function Home() {
+    // Detecta si el sistema está en dark mode
+    const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+    const theme = React.useMemo(() => getCustomTheme(prefersDarkMode ? 'dark' : 'light'), [prefersDarkMode]);
+
+    // Sesiones Clerk
     const { isSignedIn, signOut } = useAuth();
+    // Navegación Next.js
     const router = useRouter();
 
+    // Cerrar sesión
     const handleSignOut = async () => {
         await signOut();
         router.push("/");
     };
 
+    // Estilos comunes para los botones
+    const buttonStyle = {
+        margin: '10px', // Espaciado entre botones
+        padding: '12px 24px', // Botones más grandes
+        borderRadius: '20px', // Bordes redondeados
+        minWidth: '250px', // Ancho mínimo para consistencia
+    };
+
     return (
-        <>
-            <p>pepe</p>
-            {isSignedIn && (
-                <Button variant="contained" color="error" onClick={handleSignOut}>
-                    Cerrar Sesión
-                </Button>
-            )}
-        </>
+        <ThemeProvider theme={theme}>
+            <CssBaseline/>
+            {/* Contenedor principal para centrar todo */}
+            <Box
+                display="flex"
+                flexDirection="column"
+                justifyContent="center"
+                alignItems="center"
+                minHeight="100vh" // Ocupa toda la altura de la pantalla
+                textAlign="center"
+            >
+                <Typography variant="h4" gutterBottom>
+                    Cocinero
+                </Typography>
+
+                {/* Contenedor para los botones */}
+                <Box display="flex" flexDirection="column" alignItems="center">
+                    <Button
+                        variant="contained" 
+                        color="primary" 
+                        startIcon={<RestaurantMenuIcon />}
+                        sx={buttonStyle}
+                    >
+                        Preparar
+                    </Button>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        startIcon={<FormatListBulletedAddIcon />}
+                        sx={buttonStyle}
+                    >
+                        Modificar menú del día
+                    </Button>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        startIcon={<MenuBookIcon />}
+                        sx={buttonStyle}
+                    >
+                        Modificar menú
+                    </Button>
+                    {isSignedIn && (
+                        <Button 
+                            variant="contained" 
+                            color="error"
+                            startIcon={<LogoutIcon />}
+                            onClick={handleSignOut} 
+                            sx={buttonStyle}
+                        >
+                            Cerrar Sesión
+                        </Button>
+                    )}
+                </Box>
+            </Box>
+        </ThemeProvider>
     );
 }

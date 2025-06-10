@@ -85,7 +85,7 @@ export default function Home() {
         <FixedNavBar
           onAccountClick={() => setDrawerOpen(true)}
           onSearchClick={() => setSearchOpen(true)}
-          currentTab="orders" // <-- Agrega esto
+          currentTab="orders"
         />
         <RightDrawer open={drawerOpen} setOpen={setDrawerOpen} />
         <ModalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />

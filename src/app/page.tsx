@@ -23,16 +23,16 @@ import { getCustomTheme } from '@/components/MUI/CustomTheme';
 
 // Colección de información
 const TipoAlimento = [
-  { nombre: "Desayunos", imagen: "/icons/Desayuno.webp", link: "/buscar?tipo=desayuno" },
-  { nombre: "Tortas", imagen: "/icons/Torta.webp", link: "/buscar?tipo=torta" },
-  { nombre: "Sandwich", imagen: "/icons/Sandwich.webp", link: "/buscar?tipo=sandwich" },
-  { nombre: "Molletes", imagen: "/icons/Molletes.webp", link: "/buscar?tipo=mollete" },
-  { nombre: "Chilaquiles", imagen: "/icons/Chilaquiles.webp", link: "/buscar?tipo=chilaquiles" },
-  { nombre: "Tacos", imagen: "/icons/Taco.webp", link: "/buscar?tipo=taco" },
-  { nombre: "Antojitos", imagen: "/icons/Antojito.webp", link: "/buscar?tipo=antojito" },
-  { nombre: "Postres", imagen: "/icons/Postre.webp", link: "/buscar?tipo=postre" },
-  { nombre: "Bebida calientes", imagen: "/icons/BebidaCaliente.webp", link: "/buscar?tipo=bebidacaliente" },
-  { nombre: "Bebida frias", imagen: "/icons/BebidaFria.webp", link: "/buscar?tipo=bebidafria" }
+  { nombre: "Desayunos", imagen: "/icons/Desayuno.webp", link: "/filtrar?tipo=Desayuno" },
+  { nombre: "Tortas", imagen: "/icons/Torta.webp", link: "/filtrar?tipo=Torta" },
+  { nombre: "Sandwich", imagen: "/icons/Sandwich.webp", link: "/filtrar?tipo=Sandwichto" },
+  { nombre: "Molletes", imagen: "/icons/Molletes.webp", link: "/filtrar?tipo=Mollete" },
+  { nombre: "Chilaquiles", imagen: "/icons/Chilaquiles.webp", link: "/filtrar?tipo=Chilaquiles" },
+  { nombre: "Tacos", imagen: "/icons/Taco.webp", link: "/filtrar?tipo=Taco" },
+  { nombre: "Antojitos", imagen: "/icons/Antojito.webp", link: "/filtrar?tipo=Quesos y Antojos" },
+  { nombre: "Postres", imagen: "/icons/Postre.webp", link: "/filtrar?tipo=Postre" },
+  { nombre: "Bebida calientes", imagen: "/icons/BebidaCaliente.webp", link: "/filtrar?tipo=Bebida Caliente" },
+  { nombre: "Bebida frias", imagen: "/icons/BebidaFria.webp", link: "/filtrar?tipo=Bebida Fría" }
 ];
 
 export default function Home() {
@@ -50,7 +50,7 @@ export default function Home() {
   const [searchOpen, setSearchOpen] = React.useState(false);
 
   // Estados para los alimentos
-  const [alimentos, setAlimentos] = React.useState<{ nombre: string; precio: number; kcal: number }[]>([]);
+  const [alimentos, setAlimentos] = React.useState<{ id: number; nombre: string; precio: number; kcal: number }[]>([]);
 
   // Navegación
   const router = useRouter();
@@ -171,6 +171,7 @@ export default function Home() {
           {alimentos.map((alimento) => (
             <Box key={alimento.nombre} sx={{ flex: '0 0 auto' }}> {/* Contenedor para cada tarjeta */}
               <DishCard
+                id={alimento.id}
                 nombrePlatillo={alimento.nombre}
                 precio={alimento.precio}
                 calorias={alimento.kcal}

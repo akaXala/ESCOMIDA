@@ -61,8 +61,8 @@ export default function Home() {
           console.log("Respuesta alimento:", data.data[0]); // <-- Agrega esto
           // Si quieres poblar ingredientes desde la respuesta, hazlo aquí
           // Por ejemplo, si los ingredientes vienen en un string separados por coma:
-          if (data.data[0].ingredientes_obligarios) {
-            const ingredientes = data.data[0].ingredientes_obligarios.split(',').map((ing: string, idx: number) => ({
+          if (data.data[0].ingredientes_obligatorios) {
+            const ingredientes = data.data[0].ingredientes_obligatorios.split(',').map((ing: string, idx: number) => ({
               id: `ing_${idx}`,
               label: ing.trim(),
               checked: true,
@@ -125,7 +125,7 @@ export default function Home() {
             variant="overline"
             component="h1"
           >
-            ${alimento?.precio} • {alimento?.kcal} kcal 
+            ${alimento?.precio} • {alimento?.calorias} kcal 
           </Typography>
         </Box>
 

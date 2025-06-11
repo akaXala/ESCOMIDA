@@ -15,7 +15,7 @@ interface CarouselItemProps {
 // Datos de ejemplo para el carrusel
 const items: CarouselItemProps[] = [
   {
-    name: 'Exclusive offer for APEXToGo Premium, unlock 40% off',
+    name: 'Nuevas exquisitas hamburguesas',
     description: '¡La mejor hamburguesa que probarás!',
     imgSrc: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=1998&auto=format&fit=crop', // Imagen de ejemplo 1
     href: '/ofertas/premium',

@@ -36,11 +36,11 @@ interface ModalSearchProps {
 
 // Mock data
 const searchResultsData = [
-    { id: 1, name: 'ByteStart Breakfast Nook', category: 'Breakfast', avatarText: 'BN' },
-    { id: 2, name: 'SQLicious Bistro', category: 'Fast Food', avatarText: 'SB' },
-    { id: 3, name: 'PL/SQLovely Diner', category: 'Fast Food', avatarText: 'PD' },
-    { id: 4, name: 'Oracool Cafe', category: 'Breakfast', avatarText: 'OC' },
-    { id: 5, name: 'APEXquisite Delights', category: 'Chicken', avatarText: 'AD' },
+    { id: 1, name: 'Prueba1', category: 'Breakfast', avatarText: 'P1' },
+    { id: 2, name: 'Prueba2', category: 'Fast Food', avatarText: 'P2' },
+    { id: 3, name: 'Prueba3', category: 'Fast Food', avatarText: 'P3' },
+    { id: 4, name: 'Prueba4', category: 'Breakfast', avatarText: 'P4' },
+    { id: 5, name: 'Prueba5', category: 'Chicken', avatarText: 'P5' },
 ];
 
 const modalContentStyle = (theme: any) => ({

@@ -25,7 +25,7 @@ import { getCustomTheme } from '@/components/MUI/CustomTheme';
 const TipoAlimento = [
   { nombre: "Desayunos", imagen: "/icons/Desayuno.webp", link: "/filtrar?tipo=Desayuno" },
   { nombre: "Tortas", imagen: "/icons/Torta.webp", link: "/filtrar?tipo=Torta" },
-  { nombre: "Sandwich", imagen: "/icons/Sandwich.webp", link: "/filtrar?tipo=Sandwichto" },
+  { nombre: "Sandwich", imagen: "/icons/Sandwich.webp", link: "/filtrar?tipo=Sandwichito" },
   { nombre: "Molletes", imagen: "/icons/Molletes.webp", link: "/filtrar?tipo=Mollete" },
   { nombre: "Chilaquiles", imagen: "/icons/Chilaquiles.webp", link: "/filtrar?tipo=Chilaquiles" },
   { nombre: "Tacos", imagen: "/icons/Taco.webp", link: "/filtrar?tipo=Taco" },
@@ -50,7 +50,7 @@ export default function Home() {
   const [searchOpen, setSearchOpen] = React.useState(false);
 
   // Estados para los alimentos
-  const [alimentos, setAlimentos] = React.useState<{ id: number; nombre: string; precio: number; kcal: number }[]>([]);
+  const [alimentos, setAlimentos] = React.useState<{ id: number; nombre: string; precio: number; calorias: number }[]>([]);
 
   // Navegación
   const router = useRouter();
@@ -174,7 +174,7 @@ export default function Home() {
                 id={alimento.id}
                 nombrePlatillo={alimento.nombre}
                 precio={alimento.precio}
-                calorias={alimento.kcal}
+                calorias={alimento.calorias}
               />
             </Box>
           ))}

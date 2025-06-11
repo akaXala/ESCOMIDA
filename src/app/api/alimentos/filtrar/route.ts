@@ -17,7 +17,7 @@ export const POST = async (req: NextRequest) => {
 
         // Escribimos la query
         const query = `
-            SELECT id, nombre, precio, kcal 
+            SELECT id, nombre, precio, calorias 
             FROM alimento 
             WHERE categoria = $1
         `

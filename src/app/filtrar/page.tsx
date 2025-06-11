@@ -35,7 +35,7 @@ export default function Home() {
   const theme = React.useMemo(() => getCustomTheme(prefersDarkMode ? 'dark' : 'light'), [prefersDarkMode]);
 
   // Estados para los alimentos
-  const [alimentos, setAlimentos] = React.useState<{ id: number; nombre: string; precio: number; kcal: number }[]>([]);
+  const [alimentos, setAlimentos] = React.useState<{ id: number; nombre: string; precio: number; calorias: number }[]>([]);
 
   React.useEffect(() => {
       const fetchAlimentos = async () => {
@@ -81,7 +81,7 @@ export default function Home() {
                 id={alimento.id}
                 nombrePlatillo={alimento.nombre}
                 precio={alimento.precio}
-                calorias={alimento.kcal}
+                calorias={alimento.calorias}
                 />
             </Grid>
           ))}

@@ -3,7 +3,8 @@
 import * as React from 'react';
 
 // Componentes MUI
-import { Button, ThemeProvider, CssBaseline, useMediaQuery, Typography, Box } from "@mui/material";
+import { Button, ThemeProvider, CssBaseline, useMediaQuery, Typography, Box,Grid,Paper
+ } from "@mui/material";
 // Sesiones Clerk
 import { useAuth } from "@clerk/nextjs";
 // Navegación Next.js
@@ -12,10 +13,17 @@ import { useRouter } from "next/navigation";
 import { getCustomTheme } from '@/components/MUI/CustomTheme';
 
 // Iconos MUI
-import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu'; // Para "Preparar"
-import FormatListBulletedAddIcon from '@mui/icons-material/FormatListBulletedAdd'; // Para "Modificar menú del día"
-import MenuBookIcon from '@mui/icons-material/MenuBook'; // Para "Modificar menú"
-import LogoutIcon from '@mui/icons-material/Logout'; // Para "Cerrar Sesión"
+import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu';
+import FormatListBulletedAddIcon from '@mui/icons-material/FormatListBulletedAdd';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
+import LogoutIcon from '@mui/icons-material/Logout';
+import AccessTimeIcon from '@mui/icons-material/AccessTime'; // Para actividad reciente
+import ListAltIcon from '@mui/icons-material/ListAlt'; // Para órdenes
+import TrendingUpIcon from '@mui/icons-material/TrendingUp'; // Para ingredientes populares
+import NotificationsIcon from '@mui/icons-material/Notifications';
+
+
+import FixedNavBarKitchen from '@/components/FixedNavBarKitchen'
 
 export default function Home() {
     // Detecta si el sistema está en dark mode
@@ -27,12 +35,36 @@ export default function Home() {
     // Navegación Next.js
     const router = useRouter();
 
-    // Cerrar sesión
     const handleSignOut = async () => {
         await signOut();
         router.push("/");
     };
 
+    const handleListOrders = () => {
+        console.log("Navegar a la lista de órdenes");
+        router.push("/cocina/pedidos"); // Ejemplo de navegación real
+    };
+
+    const handlePopularIngredients = () => {
+        console.log("Navegar a la sección de ingredientes más populares");
+        router.push("/cocina/ingredientes"); // Ejemplo de navegación real
+    };
+
+    const handlePrepareDishes = () => {
+        console.log("Navegar a la sección de preparación de platillos");
+        // router.push("/cocina/preparar");
+    };
+
+    const handleModifyDailyMenu = () => {
+        console.log("Navegar a la sección de modificar menú del día");
+        // router.push("/cocina/menu-del-dia");
+    };
+
+    const handleModifyFullMenu = () => {
+        console.log("Navegar a la sección de modificar menú completo");
+        // router.push("/cocina/menu-completo");
+    };
+    
     // Estilos comunes para los botones
     const buttonStyle = {
         margin: '10px', // Espaciado entre botones
@@ -40,61 +72,119 @@ export default function Home() {
         borderRadius: '20px', // Bordes redondeados
         minWidth: '250px', // Ancho mínimo para consistencia
     };
-
-    return (
+    // Datos de ejemplo para el dashboard (estos vendrían de tu backend o estado)
+    const dashboardStats = {
+        pendingOrdersCount: 5,
+        newNotifications: 2,
+        todayPrepared: 15, // Ejemplo: platillos preparados hoy
+        recentActivity: [
+            { id: 1, text: 'Nueva orden #789 recibida.', time: 'Hace 5 min' },
+            { id: 2, text: 'Platillo "Tacos al Pastor" marcado como listo.', time: 'Hace 15 min' },
+            { id: 3, text: 'Alerta: Ingrediente "Aguacate" bajo en stock.', time: 'Hace 1 hora' },
+        ],
+    };
+       return (
         <ThemeProvider theme={theme}>
-            <CssBaseline/>
-            {/* Contenedor principal para centrar todo */}
+            <CssBaseline />
             <Box
-                display="flex"
-                flexDirection="column"
-                justifyContent="center"
-                alignItems="center"
-                minHeight="100vh" // Ocupa toda la altura de la pantalla
-                textAlign="center"
+                sx={{
+                    marginTop: 12, // Espacio para la barra de navegación fija
+                    padding: { xs: 2, sm: 3, md: 4 }, // Padding responsivo
+                    minHeight: '100vh',
+                    backgroundColor: theme.palette.background.default,
+                }}
             >
-                <Typography variant="h4" gutterBottom>
-                    Cocinero
+                {/* Asumo que FixedNavBarKitchen ya está manejando su propio estilo y posicionamiento */}
+                <FixedNavBarKitchen
+                    onListOrdersListClick={handleListOrders}
+                    onLogutClick={handleSignOut}
+                    onMostPoularClick={handlePopularIngredients}
+                    currentTab="kitchen"
+                />
+
+                <Typography variant="h4" component="h1" gutterBottom align="center" sx={{ color: theme.palette.text.primary, mb: 4 }}>
+                    Bienvenido, Chef!
                 </Typography>
 
-                {/* Contenedor para los botones */}
-                <Box display="flex" flexDirection="column" alignItems="center">
-                    <Button
-                        variant="contained" 
-                        color="primary" 
-                        startIcon={<RestaurantMenuIcon />}
-                        sx={buttonStyle}
-                    >
-                        Preparar
-                    </Button>
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        startIcon={<FormatListBulletedAddIcon />}
-                        sx={buttonStyle}
-                    >
-                        Modificar menú del día
-                    </Button>
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        startIcon={<MenuBookIcon />}
-                        sx={buttonStyle}
-                    >
-                        Modificar menú
-                    </Button>
-                    {isSignedIn && (
-                        <Button 
-                            variant="contained" 
+                {/* Sección de Métricas Rápidas */}
+                <Grid container spacing={3} justifyContent="center" mb={6}>
+                    <Grid item xs={12} sm={6} md={4}>
+                        <Paper elevation={4} sx={{
+                            p: 3, textAlign: 'center', backgroundColor: theme.palette.primary.main, color: theme.palette.primary.contrastText,
+                            transition: 'transform 0.3s ease-in-out', '&:hover': { transform: 'translateY(-5px)' }
+                        }}>
+                            <ListAltIcon sx={{ fontSize: 50, mb: 1 }} />
+                            <Typography variant="h5">Órdenes Pendientes</Typography>
+                            <Typography variant="h3">{dashboardStats.pendingOrdersCount}</Typography>
+                        </Paper>
+                    </Grid>
+                    <Grid item xs={12} sm={6} md={4}>
+                        <Paper elevation={4} sx={{
+                            p: 3, textAlign: 'center', backgroundColor: theme.palette.secondary.main, color: theme.palette.secondary.contrastText,
+                            transition: 'transform 0.3s ease-in-out', '&:hover': { transform: 'translateY(-5px)' }
+                        }}>
+                            <NotificationsIcon sx={{ fontSize: 50, mb: 1 }} />
+                            <Typography variant="h5">Nuevas Notificaciones</Typography>
+                            <Typography variant="h3">{dashboardStats.newNotifications}</Typography>
+                        </Paper>
+                    </Grid>
+                    <Grid item xs={12} sm={6} md={4}>
+                        <Paper elevation={4} sx={{
+                            p: 3, textAlign: 'center', backgroundColor: theme.palette.info.main, color: theme.palette.info.contrastText,
+                            transition: 'transform 0.3s ease-in-out', '&:hover': { transform: 'translateY(-5px)' }
+                        }}>
+                            <RestaurantMenuIcon sx={{ fontSize: 50, mb: 1 }} />
+                            <Typography variant="h5">Platillos Preparados Hoy</Typography>
+                            <Typography variant="h3">{dashboardStats.todayPrepared}</Typography>
+                        </Paper>
+                    </Grid>
+                </Grid>
+
+                {/* Sección de Actividad Reciente */}
+                {dashboardStats.recentActivity.length > 0 && (
+                    <Box display="flex" justifyContent="center" mb={4}>
+                        <Paper elevation={3} sx={{
+                            p: 3, width: '100%', maxWidth: 800, backgroundColor: theme.palette.background.paper
+                        }}>
+                            <Box display="flex" alignItems="center" mb={2} sx={{ color: theme.palette.text.primary }}>
+                                <AccessTimeIcon sx={{ mr: 1 }} />
+                                <Typography variant="h6" component="h3">
+                                    Actividad Reciente en Cocina
+                                </Typography>
+                            </Box>
+                            {dashboardStats.recentActivity.map((activity) => (
+                                <Box key={activity.id} display="flex" justifyContent="space-between" alignItems="center" py={1} borderBottom={1} borderColor="divider">
+                                    <Typography variant="body1" sx={{ color: theme.palette.text.secondary }}>{activity.text}</Typography>
+                                    <Typography variant="body2" color="text.secondary">{activity.time}</Typography>
+                                </Box>
+                            ))}
+                        </Paper>
+                    </Box>
+                )}
+
+                {/* Botón de Cerrar Sesión (al final) */}
+                {isSignedIn && (
+                    <Box display="flex" justifyContent="center">
+                        <Button
+                            variant="outlined" // Cambiado a outlined para diferenciarlo de los principales
                             color="error"
                             startIcon={<LogoutIcon />}
-                            onClick={handleSignOut} 
-                            sx={buttonStyle}
+                            onClick={handleSignOut}
+                            sx={{
+                                ...buttonStyle, // Mantiene el mismo estilo base
+                                borderColor: theme.palette.error.main,
+                                color: theme.palette.error.main,
+                                '&:hover': {
+                                    backgroundColor: theme.palette.error.light,
+                                    color: theme.palette.error.contrastText,
+                                    borderColor: theme.palette.error.light,
+                                },
+                            }}
                         >
                             Cerrar Sesión
                         </Button>
-                    )}
-                </Box>
+                    </Box>
+                )}
             </Box>
         </ThemeProvider>
     );

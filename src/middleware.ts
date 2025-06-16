@@ -4,7 +4,7 @@ import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 
 // Define las rutas que pertenecen a una organización específica
 const isOrgSpecificRoute = createRouteMatcher([
-    '/cocina(.*)',
+    //'/cocina(.*)',
     '/admin(.*)'
 ]);
 

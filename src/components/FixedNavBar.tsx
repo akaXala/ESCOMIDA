@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 
 // Componentes MUI
 import { Typography, AppBar, Toolbar, Button, Box, Badge, Divider, CssBaseline, ThemeProvider, useMediaQuery } from '@mui/material';
@@ -17,9 +17,6 @@ import HomeIcon from '@mui/icons-material/Home';
 import SearchIcon from '@mui/icons-material/Search';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-
-// Componente custom
-import ModalSearch from '@/components/ModalSearch';
 
 type NavItem = 'home' | 'search' | 'orders' | 'account';
 
@@ -40,7 +37,6 @@ const FixedNavBar: React.FC<FixedNavBarProps> = ({ onAccountClick, onSearchClick
     const themeMode = prefersDarkMode ? 'dark' : 'light';
     
     const logoImageUrl = "/favicon.webp";
-    const cartItemCount = 5;
 
     const router = useRouter();
 
@@ -50,9 +46,30 @@ const FixedNavBar: React.FC<FixedNavBarProps> = ({ onAccountClick, onSearchClick
       if (currentTab) setSelectedTab(currentTab);
     }, [currentTab]);
 
+    // Estado para el contador del carrito
+    const [cartItemCount, setCartItemCount] = useState<number>(0);
+
+    // Obtener el contador real del carrito desde la API
+    useEffect(() => {
+      const fetchCartCount = async () => {
+        try {
+          const res = await fetch('/api/carrito/count');
+          const data = await res.json();
+          if (data.success) {
+            setCartItemCount(data.count);
+          } else {
+            setCartItemCount(0);
+          }
+        } catch (err) {
+          setCartItemCount(0);
+        }
+      };
+      fetchCartCount();
+    }, []);
+
     // Funciones temporales
     const handleLogoClick = () => console.log("Logo clickeado!");
-    const handleCartClick = () => console.log("Carrito clickeado!");
+    const handleCartClick = () => router.push("/carrito");
 
     // Funciones para cambio de color de selector
     const handleHomeClick = () => {

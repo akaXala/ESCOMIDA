@@ -9,6 +9,11 @@ import {
 } from '@clerk/nextjs'
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { SearchProvider } from "@/context/SearchContext";
+import ModalSearch from "@/components/ModalSearch";
+import { useSearch } from "@/context/SearchContext";
+import GlobalModals from "@/components/GlobalModals";
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,13 +37,16 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang="en">
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        >
-          {children}
-        </body>
-      </html>
+      <SearchProvider>
+        <html lang="en">
+          <body
+            className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+          >
+            {children}
+            <GlobalModals />
+          </body>
+        </html>
+      </SearchProvider>
     </ClerkProvider>
   );
 }

@@ -8,10 +8,10 @@ import { AccessTime, Check } from '@mui/icons-material';
 // Importa los componentes custom
 import FixedNavBar from '@/components/FixedNavBar';
 import RightDrawer from '@/components/RightDrawer';
-import ModalSearch from '@/components/ModalSearch';
 
 // Importa el tema custom
 import { getCustomTheme } from '@/components/MUI/CustomTheme';
+import { useSearch } from '@/context/SearchContext';
 
 // 1. Definición del tipo de dato para una Orden
 interface Order {
@@ -64,12 +64,53 @@ function a11yProps(index: number) {
 export default function Home() {
   const [value, setValue] = React.useState(0);
   const [drawerOpen, setDrawerOpen] = React.useState(false);
-  const [searchOpen, setSearchOpen] = React.useState(false);
+
+  // Usa el contexto global para abrir el modal
+  const { openSearch } = useSearch();
+
+  // Estados para los alimentos
+  const [alimentos, setAlimentos] = React.useState<{ id: number; nombre: string; precio: number; calorias: number }[]>([]);
 
   // Detecta si el sistema está en dark mode
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
   const theme = React.useMemo(() => getCustomTheme(prefersDarkMode ? 'dark' : 'light'), [prefersDarkMode]);
+  const themeMode = prefersDarkMode ? 'dark' : 'light';
 
+  const backgroundColor = (themeMode === 'light') ? '#0334BA' : '#6C84DB';
+
+  React.useEffect(() => {
+    const fetchUsuario = async () => {
+      try {
+        const res = await fetch('/api/usuario');
+        const data = await res.json();
+        
+        if (!data.success) {
+          alert("Error al buscar o registrar el usuario.");
+        }
+
+      } catch (error) {
+        alert("Error al conectar con el servidor de usuario.");
+      }
+    };
+    fetchUsuario();
+  }, []);
+
+  React.useEffect(() => {
+    const fetchAlimentos = async () => {
+      try {
+        const res = await fetch('/api/alimentos');
+        const data = await res.json();
+
+        if (data.success) { 
+          setAlimentos(data.data);
+        }
+      } catch (error) {
+        console.error("Error al cargar los alimentos: " + error);
+      }
+    };
+    fetchAlimentos();
+  }, []);
+  
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
@@ -81,33 +122,71 @@ export default function Home() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Box marginTop={12}>
+      <Box marginTop={12} sx={{ marginX: { xs: 1, sm: 5 } }}>
         <FixedNavBar
           onAccountClick={() => setDrawerOpen(true)}
-          onSearchClick={() => setSearchOpen(true)}
+          onSearchClick={openSearch}
           currentTab="orders"
         />
         <RightDrawer open={drawerOpen} setOpen={setDrawerOpen} />
-        <ModalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
 
         <Typography variant="h4" component="h1" sx={{ p: { xs: 2, sm: 3 } }}>
           Ordenes
         </Typography>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs value={value} onChange={handleChange} aria-label="orders tabs">
-            <Tab label="En progreso" {...a11yProps(0)} />
-            <Tab label="Ordenes pasadas" {...a11yProps(1)} />
+          <Tabs
+            value={value}
+            onChange={handleChange}
+            aria-label="orders tabs"
+            sx={{
+              // Cambia el color del indicador
+              '& .MuiTabs-indicator': {
+                backgroundColor: prefersDarkMode ? '#fff' : '#000',
+              },
+            }}
+          >
+            <Tab
+              label="En progreso"
+              {...a11yProps(0)}
+              sx={{
+                color: prefersDarkMode ? '#fff' : '#000',
+                '&.Mui-selected': {
+                  color: prefersDarkMode ? '#fff' : '#000',
+                },
+              }}
+            />
+            <Tab
+              label="Ordenes pasadas"
+              {...a11yProps(1)}
+              sx={{
+                color: prefersDarkMode ? '#fff' : '#000',
+                '&.Mui-selected': {
+                  color: prefersDarkMode ? '#fff' : '#000',
+                },
+              }}
+            />
           </Tabs>
         </Box>
 
         {/* Panel de Órdenes "In Progress" */}
         <CustomTabPanel value={value} index={0}>
-          <List sx={{ width: '100%', bgcolor: 'background.paper' }}>
+          <List
+            sx={{
+              width: '100%',
+              bgcolor: 'background.paper',
+              marginLeft: 0,
+              paddingLeft: 0,
+              // Elimina el padding horizontal de los ListItem
+              '& .MuiListItem-root': {
+                paddingLeft: 0,
+              },
+            }}
+          >
             {inProgressOrders.map((order, index) => (
               <React.Fragment key={order.id}>
                 <ListItem>
                   <ListItemAvatar>
-                    <Avatar sx={{ bgcolor: 'error.main' }}>
+                    <Avatar sx={{ bgcolor: backgroundColor }}>
                       <AccessTime />
                     </Avatar>
                   </ListItemAvatar>
@@ -124,12 +203,22 @@ export default function Home() {
         
         {/* Panel de Órdenes "Past Orders" */}
         <CustomTabPanel value={value} index={1}>
-          <List sx={{ width: '100%', bgcolor: 'background.paper' }}>
+          <List
+            sx={{
+              width: '100%',
+              bgcolor: 'background.paper',
+              marginLeft: 0,
+              paddingLeft: 0,
+              '& .MuiListItem-root': {
+                paddingLeft: 0,
+              },
+            }}
+          >
             {pastOrders.map((order, index) => (
               <React.Fragment key={order.id}>
                 <ListItem>
                   <ListItemAvatar>
-                    <Avatar sx={{ bgcolor: 'error.main' }}>
+                    <Avatar sx={{ bgcolor: backgroundColor }}>
                       <Check />
                     </Avatar>
                   </ListItemAvatar>

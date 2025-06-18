@@ -18,9 +18,13 @@ import MenuBookIcon from '@mui/icons-material/MenuBook'; // Para "Modificar men�
 import LogoutIcon from '@mui/icons-material/Logout'; // Para "Cerrar Sesión"
 
 export default function Home() {
+    // Estado para saber si estamos en el cliente
+    const [mounted, setMounted] = React.useState(false);
+    React.useEffect(() => { setMounted(true); }, []);
+
     // Detecta si el sistema está en dark mode
     const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
-    const theme = React.useMemo(() => getCustomTheme(prefersDarkMode ? 'dark' : 'light'), [prefersDarkMode]);
+    const theme = React.useMemo(() => getCustomTheme(mounted && prefersDarkMode ? 'dark' : 'light'), [mounted, prefersDarkMode]);
 
     // Sesiones Clerk
     const { isSignedIn, signOut } = useAuth();
@@ -40,6 +44,8 @@ export default function Home() {
         borderRadius: '20px', // Bordes redondeados
         minWidth: '250px', // Ancho mínimo para consistencia
     };
+
+    if (!mounted) return null;
 
     return (
         <ThemeProvider theme={theme}>

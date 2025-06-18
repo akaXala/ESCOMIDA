@@ -26,9 +26,9 @@ interface ItemProps {
   extra?: string[];
   ingredientes_opcionales?: string[];
   imagen: string;
-  cantidad: number; // <-- nuevo prop
+  cantidad: number;
   precio_final: number;
-  onDelete?: (id_item: number) => void; // <-- NUEVO
+  onDelete?: (id_item: number) => void;
 }
 
 // 2. DEFINICIÓN DEL COMPONENTE
@@ -61,7 +61,7 @@ const CartItem: React.FC<ItemProps> = ({
       if (res.ok) {
         const data = await res.json();
         setQuantity(data.cantidad);
-        setPrice(data.precio_final); // <-- Actualiza el precio
+        setPrice(data.precio_final);
       } else {
         // Maneja el error (opcional: mostrar mensaje)
       }
@@ -81,7 +81,7 @@ const CartItem: React.FC<ItemProps> = ({
         if (res.ok) {
           const data = await res.json();
           setQuantity(data.cantidad);
-          setPrice(data.precio_final); // <-- Actualiza el precio
+          setPrice(data.precio_final);
         } else {
           // Maneja el error (opcional: mostrar mensaje)
         }
@@ -99,7 +99,7 @@ const CartItem: React.FC<ItemProps> = ({
         body: JSON.stringify({ id_item }),
       });
       if (res.ok) {
-        if (onDelete) onDelete(id_item); // Notifica al padre para quitar el item de la lista
+        if (onDelete) onDelete(id_item);
       } else {
         // Maneja el error (opcional)
       }
@@ -158,11 +158,6 @@ const CartItem: React.FC<ItemProps> = ({
           }}
           onClick={toggleIngredients}
         >
-          {/* <Typography variant="body2" color="text.secondary">
-            {allIngredients.join(' - ')}
-            {salsa && salsa.length > 0 && ` - ${salsa.join(' - ')}`}
-            {extra && extra.length > 0 && ` - ${extra.join(' - ')}`}
-          </Typography> */}
           <IconButton size="small">
             {ingredientsVisible ? <ExpandLess /> : <ExpandMore />}
           </IconButton>
@@ -195,7 +190,7 @@ const CartItem: React.FC<ItemProps> = ({
           </Box>
         </Collapse>
 
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mt: 'auto' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mt: 'auto' }} paddingTop={1}>
           <Box
             sx={{
               display: 'flex',
@@ -210,14 +205,26 @@ const CartItem: React.FC<ItemProps> = ({
                 <Delete />
               </IconButton>
             ) : (
-              <IconButton onClick={handleDecrease} size="small">
+              <IconButton
+                onClick={handleDecrease}
+                size="small"
+                sx={{
+                  color: theme.palette.mode === 'light' ? '#000' : '#fff',
+                }}
+              >
                 <RemoveCircleOutline />
               </IconButton>
             )}
             <Typography variant="h6" component="span" sx={{ mx: 2 }}>
               {quantity}
             </Typography>
-            <IconButton color="primary" onClick={handleIncrease} size="small">
+            <IconButton
+              onClick={handleIncrease}
+              size="small"
+              sx={{
+                color: theme.palette.mode === 'light' ? '#000' : '#fff',
+              }}
+            >
               <AddCircleOutline />
             </IconButton>
           </Box>

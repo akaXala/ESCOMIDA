@@ -19,6 +19,13 @@ import {
 
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
+import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
+
+// Alertas
+import { mostrarAlerta } from '@/components/SweetAlert/modalAlerts';
+
+// Navegación Next.js
+import { useRouter } from "next/navigation";
 
 // Para el tema
 import { ThemeProvider, useMediaQuery } from '@mui/material';
@@ -28,6 +35,7 @@ import { useSearchParams } from 'next/navigation';
 
 // Importa el tema custom
 import { getCustomTheme } from '@/components/MUI/CustomTheme';
+import { useAuth } from "@clerk/nextjs"; // Agrega esta línea si no está
 
 // La interfaz para los ingredientes no cambia
 interface Ingredient {
@@ -38,10 +46,14 @@ interface Ingredient {
 }
 
 export default function Home() {
+  // Estado para saber si estamos en el cliente
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => { setMounted(true); }, []);
+
   // Detecta si el sistema está en dark mode
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
-  const theme = React.useMemo(() => getCustomTheme(prefersDarkMode ? 'dark' : 'light'), [prefersDarkMode]);
-  const themeMode = prefersDarkMode ? 'dark' : 'light';
+  const theme = React.useMemo(() => getCustomTheme(mounted && prefersDarkMode ? 'dark' : 'light'), [mounted, prefersDarkMode]);
+  const themeMode = mounted && prefersDarkMode ? 'dark' : 'light';
 
   // Parametros de busqueda
   const searchParams = useSearchParams();
@@ -63,6 +75,9 @@ export default function Home() {
   const [selectedSalsa, setSelectedSalsa] = React.useState<string>('');
   const [extras, setExtras] = React.useState<string[]>([]);
   const [selectedExtra, setSelectedExtra] = React.useState<string>('');
+
+  const { isLoaded, isSignedIn } = useAuth();
+  const router = useRouter();
 
   React.useEffect(() => {
     if (!id_alimento) return;
@@ -130,6 +145,12 @@ export default function Home() {
   };
 
   const addCart = async () => {
+    // Verifica si está logueado
+    if (isLoaded && !isSignedIn) {
+      router.replace(`/sign-in?redirect_url=/producto?id=${id_alimento}`);
+      return;
+  }
+
     if (!alimento) return;
 
     // Construye los campos requeridos por el endpoint
@@ -154,15 +175,18 @@ export default function Home() {
       });
       const data = await response.json();
       if (data.success) {
-        // Opcional: muestra un mensaje de éxito o redirige
-        alert("Producto añadido al carrito");
+        mostrarAlerta("Producto añadido al carrito", `${alimento.nombre} se añadio correctamente`, "Aceptar", "success");
+        router.push("/");
       } else {
-        alert("Error: " + data.error);
+        mostrarAlerta("Error al añadir", `Error: ${data.error}`, "Aceptar", "error");
       }
     } catch (error) {
+      mostrarAlerta("Error", "Error al añadir", "Aceptar", "error");
       alert("Error al añadir producto");
     }
   };
+
+  if (!mounted) return null;
 
   return (
     <ThemeProvider theme={theme}>
@@ -349,12 +373,13 @@ export default function Home() {
                 borderRadius: '50px',
                 bgcolor: borderColor,
             }}
+            startIcon={<AddShoppingCartIcon />}
             onClick={addCart} // <-- Agrega el handler aquí
             >
               Añadir producto
             </Button>
         </Box>
-        </Box>
+      </Box>
     </ThemeProvider>
     
   );

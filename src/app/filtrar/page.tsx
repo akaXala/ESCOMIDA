@@ -20,6 +20,10 @@ import { getCustomTheme } from '@/components/MUI/CustomTheme';
 import { useSearch } from '@/context/SearchContext';
 
 export default function Home() {
+  // Estado para saber si estamos en el cliente
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => { setMounted(true); }, []);
+
   // Estados para el drawer y el modal
   const [drawerOpen, setDrawerOpen] = React.useState(false);
 
@@ -33,7 +37,7 @@ export default function Home() {
 
   // Detecta si el sistema está en dark mode
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
-  const theme = React.useMemo(() => getCustomTheme(prefersDarkMode ? 'dark' : 'light'), [prefersDarkMode]);
+  const theme = React.useMemo(() => getCustomTheme(mounted && prefersDarkMode ? 'dark' : 'light'), [mounted, prefersDarkMode]);
 
   // Estados para los alimentos
   const [alimentos, setAlimentos] = React.useState<{ id_alimento: number; nombre: string; precio: number; calorias: number, imagen: string }[]>([]);
@@ -60,10 +64,12 @@ export default function Home() {
       fetchAlimentos();
     }, []);
 
+  if (!mounted) return null;
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Box marginTop={12}>
+      <Box marginTop={{xs: 7, sm: 12}}>
         <FixedNavBar
           onAccountClick={() => setDrawerOpen(true)}
           onSearchClick={openSearch}

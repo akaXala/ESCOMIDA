@@ -36,13 +36,16 @@ const TipoAlimento = [
 ];
 
 export default function Home() {
+  // Estado para saber si estamos en el cliente
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => { setMounted(true); }, []);
+
   // Detecta si el sistema está en dark mode
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
-  const theme = React.useMemo(() => getCustomTheme(prefersDarkMode ? 'dark' : 'light'), [prefersDarkMode]);
+  const theme = React.useMemo(() => getCustomTheme(mounted && prefersDarkMode ? 'dark' : 'light'), [mounted, prefersDarkMode]);
 
   // Hook de MUI para acceder al tema y sus breakpoints
   const muiTheme = useTheme();
-  // Detecta si el ancho de la pantalla corresponde a un móvil (breakpoint 'sm' de MUI)
   const isMobile = useMediaQuery(muiTheme.breakpoints.down('sm'));
 
   // Drawer
@@ -96,10 +99,12 @@ export default function Home() {
     />
   );
 
+  if (!mounted) return null;
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Box marginTop={12}>
+      <Box marginTop={{xs: 7, sm: 12}}>
         <Grid container>
           <FixedNavBar
             onAccountClick={() => setDrawerOpen(true)}
@@ -110,7 +115,7 @@ export default function Home() {
           <SearchButton onClick={openSearch} />
         </Grid>
 
-        {isMobile ? (
+        {mounted && isMobile ? (
           // Vista de Carrusel para Móviles
           <Box
             sx={{

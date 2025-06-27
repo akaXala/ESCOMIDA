@@ -77,13 +77,13 @@ export default function Home () {
             });
             const data = await response.json();
             if (data.success) {
-                mostrarAlerta("Pedido creado correctamente", "El pedido se creo correctamente", "Aceptar", "success");
+                mostrarAlerta("Pedido creado correctamente", "El pedido se creo correctamente", "Aceptar", "success", themeMode);
                 router.push("/ordenes"); // Cambia la ruta según tu app
             } else {
-                mostrarAlerta("No se pudo crear el pedido", `${data.error}`, "Aceptar", "error");
+                mostrarAlerta("No se pudo crear el pedido", `${data.error}`, "Aceptar", "error", themeMode);
             }
         } catch (error) {
-            mostrarAlerta("Error", "No se pudo crear el pedido", "Aceptar", "error");
+            mostrarAlerta("Error", "No se pudo crear el pedido", "Aceptar", "error", themeMode);
         }
     }
 

@@ -174,7 +174,7 @@ export default function Home() {
       if (data.success) {
         setIsFavorite(true);
       } else {
-        mostrarAlerta("Error", data.error || "No se pudo añadir a favoritos.", "Aceptar", "error");
+        mostrarAlerta("Error", data.error || "No se pudo añadir a favoritos.", "Aceptar", "error", themeMode);
       }
     } else {
       // Eliminar de favoritos
@@ -187,7 +187,7 @@ export default function Home() {
       if (data.success) {
         setIsFavorite(false);
       } else {
-        mostrarAlerta("Error", data.error || "No se pudo eliminar de favoritos.", "Aceptar", "error");
+        mostrarAlerta("Error", data.error || "No se pudo eliminar de favoritos.", "Aceptar", "error", themeMode);
       }
     }
   };
@@ -218,14 +218,13 @@ export default function Home() {
       });
       const data = await response.json();
       if (data.success) {
-        mostrarAlerta("Producto añadido al carrito", `${alimento.nombre} se añadio correctamente`, "Aceptar", "success");
+        mostrarAlerta("Producto añadido al carrito", `${alimento.nombre} se añadio correctamente`, "Aceptar", "success", themeMode);
         router.push("/");
       } else {
-        mostrarAlerta("Error al añadir", `Error: ${data.error}`, "Aceptar", "error");
+        mostrarAlerta("Error al añadir", `Error: ${data.error}`, "Aceptar", "error", themeMode);
       }
     } catch (error) {
-      mostrarAlerta("Error", "Error al añadir", "Aceptar", "error");
-      alert("Error al añadir producto");
+      mostrarAlerta("Error", "Error al añadir", "Aceptar", "error", themeMode);
     }
   };
 

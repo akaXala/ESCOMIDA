@@ -1,0 +1,91 @@
+import { auth } from "@clerk/nextjs/server";
+import { NextRequest, NextResponse } from "next/server";
+import pool from "@/config/database";
+
+export const POST = async (req: NextRequest) => {
+    try {
+        const body = await req.json();  // Obtenemos el cuerpo de la petición
+        const { userId }: { userId: string | null } = await auth(); // Obtenemos el ID del usuario
+        
+        // Buscamos el carrito
+        const carritoQuery = `SELECT id_carrito FROM carrito WHERE id = $1 LIMIT 1`;
+        const carritoResult = await pool.query(carritoQuery, [userId]);
+        if (carritoResult.rowCount === 0) {
+            return NextResponse.json(
+                { success: false, error: "No se encontró un carrito para el usuario." },
+                { status: 404 }
+            );
+        }
+        const id_carrito = carritoResult.rows[0].id_carrito;
+
+        // Creamos el cuerpo
+        const {
+            categoria,
+            nombre,
+            ingredientes_obligatorios,
+            salsa,
+            extra,
+            ingredientes_opcionales,
+            precio,
+            imagen,
+            cantidad,
+            id_original,
+        } = body;
+
+        // Validamos los campos necesarios
+        if (!categoria || !nombre || !ingredientes_obligatorios || !precio || !imagen || !cantidad || !id_original) {
+            return NextResponse.json(
+                { success: false, error: "Faltan campos obligatorios." },
+                { status: 400 }
+            );
+        }
+
+        // Creamos la query
+        const query = `
+            INSERT INTO item (
+                categoria,
+                nombre,
+                ingredientes_obligatorios,
+                salsa,
+                extra,
+                ingredientes_opcionales,
+                precio,
+                imagen,
+                cantidad,
+                id_original,
+                id_carrito
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+        `;
+
+        // Escribimos los valores
+        const values = [
+            categoria,
+            nombre,
+            ingredientes_obligatorios,
+            salsa,
+            extra,
+            ingredientes_opcionales,
+            precio,
+            imagen,
+            cantidad,
+            id_original,
+            id_carrito,
+        ];
+
+        // Realizamos la query
+        const result = await pool.query(query, values);
+
+        // Regresamos la query exitosa
+        return NextResponse.json(
+            { success: true },
+            { status: 201 }
+        );
+    } catch (error) {
+        // Error al agregar al carrito
+        console.error("Error en al agregar al producto: ", error);
+        return NextResponse.json(
+            { success: false, error: "Error interno del servidor" },
+            { status: 500 }
+        );
+    }
+}

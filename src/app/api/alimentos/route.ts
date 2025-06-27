@@ -4,7 +4,7 @@ import pool from '@/config/database';   // Conexión a PostgreSQL
 export const GET = async () => {
     try {
         const query = `
-            SELECT id, nombre, precio, calorias FROM alimento
+            SELECT id_alimento, nombre, precio, calorias, imagen FROM alimento
         `;
         const result = await pool.query(query);
 

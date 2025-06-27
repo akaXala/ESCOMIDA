@@ -12,19 +12,17 @@ interface DishCardProps {
   nombrePlatillo: string;
   precio: number;
   calorias: number;
+  imagen?: string;
 }
 
-const DishCard: React.FC<DishCardProps> = ({ id, nombrePlatillo, precio, calorias }) => {
-  // Genera una URL de imagen aleatoria basada en el nombre del platillo para consistencia
-  const randomImage = `https://picsum.photos/seed/${nombrePlatillo}/400/300`;
-
+const DishCard: React.FC<DishCardProps> = ({ id, nombrePlatillo, precio, calorias, imagen }) => {
   return (
     <Link href={`/producto?id=${id}`} style={{ textDecoration: 'none' }}>
       <Card sx={{ maxWidth: 345, borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)', cursor: 'pointer' }}>
         <CardMedia
           component="img"
           height="200"
-          image={randomImage}
+          image={imagen}
           alt={`Imagen de ${nombrePlatillo}`}
           sx={{ objectFit: 'cover' }}
         />

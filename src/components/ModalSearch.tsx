@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from 'react';
+import { useRouter } from 'next/navigation';
 
 // Motion
 import { motion, AnimatePresence } from 'motion/react';
@@ -16,7 +17,6 @@ import {
     Typography,
     IconButton,
     List,
-    ListItem,
     ListItemAvatar,
     Avatar,
     ListItemText,
@@ -29,19 +29,19 @@ import { Search as SearchIcon, Close as CloseIcon } from '@mui/icons-material';
 // Tema personalizado
 import { getCustomTheme } from '@/components/MUI/CustomTheme';
 
+interface Alimento {
+    id_alimento: number;
+    nombre: string;
+    precio: number;
+    calorias: number;
+    imagen?: string; // Asegúrate de que tu API regrese la ruta de la imagen
+}
+
 interface ModalSearchProps {
     open: boolean;
     onClose: () => void;
+    alimentos: Alimento[];
 }
-
-// Mock data
-const searchResultsData = [
-    { id: 1, name: 'Prueba1', category: 'Breakfast', avatarText: 'P1' },
-    { id: 2, name: 'Prueba2', category: 'Fast Food', avatarText: 'P2' },
-    { id: 3, name: 'Prueba3', category: 'Fast Food', avatarText: 'P3' },
-    { id: 4, name: 'Prueba4', category: 'Breakfast', avatarText: 'P4' },
-    { id: 5, name: 'Prueba5', category: 'Chicken', avatarText: 'P5' },
-];
 
 const modalContentStyle = (theme: any) => ({
     position: 'absolute',
@@ -60,14 +60,24 @@ const modalContentStyle = (theme: any) => ({
 
 const MotionBox = motion.create(Box);
 
-export default function ModalSearch({ open, onClose }: ModalSearchProps) {
+export default function ModalSearch({ open, onClose, alimentos }: ModalSearchProps) {
     const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
     const theme = React.useMemo(() => getCustomTheme(prefersDarkMode ? 'dark' : 'light'), [prefersDarkMode]);
     const themeMode = prefersDarkMode ? 'dark' : 'light';
+    const [search, setSearch] = React.useState('');
+    const router = useRouter();
 
     const borderColor = (themeMode === 'light') ? '#0044ff' : '#91a8fd';
     const borderHoverColor = (themeMode === 'light') ? '#0334BA' : '#6C84DB';
     const borderFocusedColor = (themeMode === 'light') ? '#0334BA' : '#6C84DB';
+
+    // Filtrado en tiempo real
+    const filteredResults = React.useMemo(() => {
+        if (!search) return alimentos;
+        return alimentos.filter(a =>
+            a.nombre.toLowerCase().includes(search.toLowerCase())
+        );
+    }, [search, alimentos]);
 
     return (
         <ThemeProvider theme={theme}>
@@ -79,7 +89,6 @@ export default function ModalSearch({ open, onClose }: ModalSearchProps) {
                         open={open}
                         onClose={onClose}
                         aria-labelledby="search-modal-title"
-                        // Evita la animación de fondo por defecto del Modal para no entrar en conflicto
                         slotProps={{ backdrop: { style: { backgroundColor: 'rgba(0, 0, 0, 0.5)' } } }}
                     >
                         <MotionBox
@@ -89,7 +98,7 @@ export default function ModalSearch({ open, onClose }: ModalSearchProps) {
                             exit={{ opacity: 0, y: 30 }}
                             transition={{ ease: "easeInOut", duration: 0.3 }}
                         >
-                            {/* Header: Title and Close Button */}
+                            {/* Header */}
                             <Box
                                 sx={{
                                     display: 'flex',
@@ -115,6 +124,8 @@ export default function ModalSearch({ open, onClose }: ModalSearchProps) {
                                     fullWidth
                                     placeholder="Buscar en ESCOMIDA..."
                                     variant="outlined"
+                                    value={search}
+                                    onChange={e => setSearch(e.target.value)}
                                     InputProps={{
                                         startAdornment: (
                                             <InputAdornment position="start">
@@ -134,29 +145,45 @@ export default function ModalSearch({ open, onClose }: ModalSearchProps) {
                             {/* Results List */}
                             <Box sx={{ overflowY: 'auto', flexGrow: 1 }}>
                                 <List sx={{ py: 0 }}>
-                                    {searchResultsData.map((item, index) => (
-                                        <React.Fragment key={item.id}>
-                                            <ListItemButton sx={{ px: '16px', py: '10px' }}>
-                                                <ListItemAvatar>
-                                                    <Avatar
-                                                        alt={item.name}
-                                                        src={`/images/avatar_placeholder_${item.id}.png`}
-                                                        sx={{
-                                                            bgcolor: theme.palette.primary.main,
-                                                            color: theme.palette.getContrastText(theme.palette.primary.main)
-                                                        }}
-                                                    >
-                                                        {item.avatarText}
-                                                    </Avatar>
-                                                </ListItemAvatar>
-                                                <ListItemText
-                                                    primary={<Typography variant="body1">{item.name}</Typography>}
-                                                    secondary={<Typography variant="body2" color="text.secondary">{item.category}</Typography>}
-                                                />
-                                            </ListItemButton>
-                                            {index < searchResultsData.length - 1 && <Divider variant="inset" component="li" />}
-                                        </React.Fragment>
-                                    ))}
+                                    {filteredResults.length === 0 ? (
+                                        <Typography sx={{ px: 3, py: 2 }} color="text.secondary">
+                                            No se encontraron resultados.
+                                        </Typography>
+                                    ) : (
+                                        filteredResults.map((item, index) => (
+                                            <React.Fragment key={item.id_alimento}>
+                                                <ListItemButton
+                                                    sx={{ px: '16px', py: '10px' }}
+                                                    onClick={() => {
+                                                        onClose();
+                                                        router.push(`/producto?id=${item.id_alimento}`);
+                                                    }}
+                                                >
+                                                    <ListItemAvatar>
+                                                        <Avatar
+                                                            alt={item.nombre}
+                                                            src={item.imagen || `/images/avatar_placeholder_${item.id_alimento}.png`}
+                                                            sx={{
+                                                                bgcolor: theme.palette.primary.main,
+                                                                color: theme.palette.getContrastText(theme.palette.primary.main)
+                                                            }}
+                                                        >
+                                                            {item.nombre[0]}
+                                                        </Avatar>
+                                                    </ListItemAvatar>
+                                                    <ListItemText
+                                                        primary={<Typography variant="body1">{item.nombre}</Typography>}
+                                                        secondary={
+                                                            <Typography variant="body2" color="text.secondary">
+                                                                {item.calorias} kcal · ${item.precio}
+                                                            </Typography>
+                                                        }
+                                                    />
+                                                </ListItemButton>
+                                                {index < filteredResults.length - 1 && <Divider variant="inset" component="li" />}
+                                            </React.Fragment>
+                                        ))
+                                    )}
                                 </List>
                             </Box>
                         </MotionBox>

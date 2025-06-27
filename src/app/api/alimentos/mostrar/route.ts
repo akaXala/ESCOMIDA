@@ -5,10 +5,10 @@ export const POST = async (req: NextRequest) => {
     try {
         const body = await req.json();  // Obtenemos los datos
 
-        const { id } = body; // Creamos el cuerpo
+        const { id_alimento } = body; // Creamos el cuerpo
 
         // Validamos el campo necesario
-        if (!id) {
+        if (!id_alimento) {
             return NextResponse.json(
                 { success: false, error: "Faltan campos obligatorios." },
                 { status: 400 }
@@ -19,11 +19,11 @@ export const POST = async (req: NextRequest) => {
         const query = `
             SELECT *
             FROM alimento 
-            WHERE id = $1
+            WHERE id_alimento = $1
         `
 
         // Valores
-        const values = [id];
+        const values = [id_alimento];
 
         // Realizamos la query
         const result = await pool.query(query, values);

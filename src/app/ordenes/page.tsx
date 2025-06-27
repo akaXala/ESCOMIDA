@@ -1,35 +1,31 @@
 'use client';
 
 import * as React from 'react';
+import { useRouter } from "next/navigation";
+import { useAuth } from "@clerk/nextjs";
 import { Box, Tab, Tabs, List, ListItem, ListItemAvatar, Avatar, ListItemText, Typography, Divider, CssBaseline } from '@mui/material';
 import { ThemeProvider, useMediaQuery } from '@mui/material';
-import { AccessTime, Check } from '@mui/icons-material';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import LocalDiningIcon from '@mui/icons-material/LocalDining';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import DoneAllIcon from '@mui/icons-material/DoneAll';
 
 // Importa los componentes custom
 import FixedNavBar from '@/components/FixedNavBar';
 import RightDrawer from '@/components/RightDrawer';
-import ModalSearch from '@/components/ModalSearch';
 
 // Importa el tema custom
 import { getCustomTheme } from '@/components/MUI/CustomTheme';
+import { useSearch } from '@/context/SearchContext';
+import { useOrderDetails } from '@/context/OrderDetailsContext';
 
 // 1. Definición del tipo de dato para una Orden
 interface Order {
-  id: number;
-  orderNumber: number;
-  status: 'In Progress' | 'Past Orders';
-  date: string;
+  id_pedido: number;
+  estatus: string;
+  fecha: string;
+  precio_total: number;
 }
-
-// 2. Colección de datos (aquí puedes obtenerla de una API en el futuro)
-const ordenes: Order[] = [
-  { id: 77, orderNumber: 77, status: 'In Progress', date: 'May 21, 2025' },
-  { id: 12, orderNumber: 12, status: 'Past Orders', date: 'May 9, 2025' },
-  { id: 48, orderNumber: 48, status: 'Past Orders', date: 'April 18, 2025' },
-  { id: 24, orderNumber: 24, status: 'Past Orders', date: 'March 26, 2025' },
-  { id: 36, orderNumber: 36, status: 'Past Orders', date: 'March 25, 2025' },
-  { id: 92, orderNumber: 92, status: 'In Progress', date: 'June 5, 2025' },
-];
 
 // --- Componentes Auxiliares ---
 interface TabPanelProps {
@@ -61,89 +57,238 @@ function a11yProps(index: number) {
 }
 // --- Fin de Componentes Auxiliares ---
 
+// Icono según estatus
+function getStatusIcon(estatus: string, color: string) {
+  switch (estatus) {
+    case 'En espera':
+      return <AccessTimeIcon />;
+    case 'Preparando':
+      return <LocalDiningIcon />;
+    case 'Listo para recoger':
+      return <CheckCircleIcon />;
+    case 'Entregado':
+      return <DoneAllIcon />;
+    default:
+      return <AccessTimeIcon />;
+  }
+}
+
+// Texto amigable para mostrar
+function getStatusText(estatus: string) {
+  switch (estatus) {
+    case 'En espera':
+      return 'En espera';
+    case 'Preparando':
+      return 'Preparando';
+    case 'Listo para recoger':
+      return 'Listo para recoger';
+    case 'Entregado':
+      return 'Entregado';
+    default:
+      return estatus;
+  }
+}
+
 export default function Home() {
-  const [value, setValue] = React.useState(0);
-  const [drawerOpen, setDrawerOpen] = React.useState(false);
-  const [searchOpen, setSearchOpen] = React.useState(false);
+    // Estado para saber si estamos en el cliente
+    const [mounted, setMounted] = React.useState(false);
+    React.useEffect(() => { setMounted(true); }, []);
 
-  // Detecta si el sistema está en dark mode
-  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
-  const theme = React.useMemo(() => getCustomTheme(prefersDarkMode ? 'dark' : 'light'), [prefersDarkMode]);
+    const { isLoaded, isSignedIn } = useAuth();
+    const router = useRouter();
 
-  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
-    setValue(newValue);
-  };
+    React.useEffect(() => {
+        if (isLoaded && !isSignedIn) {
+            router.replace(`/sign-in?redirect_url=/ordenes`);
+        }
+    }, [isLoaded, isSignedIn, router]);
 
-  // Filtramos las órdenes según su estado
-  const inProgressOrders = ordenes.filter(order => order.status === 'In Progress');
-  const pastOrders = ordenes.filter(order => order.status === 'Past Orders');
+    const [value, setValue] = React.useState(0);
+    const [drawerOpen, setDrawerOpen] = React.useState(false);
 
-  return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Box marginTop={12}>
-        <FixedNavBar
-          onAccountClick={() => setDrawerOpen(true)}
-          onSearchClick={() => setSearchOpen(true)}
-          currentTab="orders"
-        />
-        <RightDrawer open={drawerOpen} setOpen={setDrawerOpen} />
-        <ModalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
+    // Usa el contexto global para abrir el modal y manejo de datos
+    const { openSearch } = useSearch();
+    const { setOrderDetails } = useOrderDetails();
 
-        <Typography variant="h4" component="h1" sx={{ p: { xs: 2, sm: 3 } }}>
-          Ordenes
-        </Typography>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs value={value} onChange={handleChange} aria-label="orders tabs">
-            <Tab label="En progreso" {...a11yProps(0)} />
-            <Tab label="Ordenes pasadas" {...a11yProps(1)} />
-          </Tabs>
+    // Detecta si el sistema está en dark mode
+    const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+    const theme = React.useMemo(() => getCustomTheme(mounted && prefersDarkMode ? 'dark' : 'light'), [mounted, prefersDarkMode]);
+    const themeMode = mounted && prefersDarkMode ? 'dark' : 'light';
+
+    const backgroundColor = (themeMode === 'light') ? '#0334BA' : '#6C84DB';
+    
+    const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+      setValue(newValue);
+    };
+
+    // Estado para las órdenes
+    const [orders, setOrders] = React.useState<Order[]>([]);
+    const [loading, setLoading] = React.useState(true);
+
+    React.useEffect(() => {
+      const fetchOrders = async () => {
+        try {
+          const res = await fetch('/api/ordenes/mostrar-todos');
+          const data = await res.json();
+          if (data.success) {
+            setOrders(data.data);
+          }
+        } catch (error) {
+          // Manejo de error opcional
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchOrders();
+    }, []);
+
+    // Filtrado por estatus
+    const inProgressStatuses = ['En espera', 'Preparando', 'Listo para recoger'];
+    const inProgressOrders = orders.filter(order => inProgressStatuses.includes(order.estatus));
+    const pastOrders = orders.filter(order => order.estatus === 'Entregado');
+
+    if (!mounted) return null;
+
+    return (
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Box marginTop={{xs: 7, sm: 12}} sx={{ marginX: { xs: 1, sm: 5 } }}>
+          <FixedNavBar
+            onAccountClick={() => setDrawerOpen(true)}
+            onSearchClick={openSearch}
+            currentTab="orders"
+          />
+          <RightDrawer open={drawerOpen} setOpen={setDrawerOpen} />
+
+          <Typography variant="h4" component="h1" sx={{ py: { xs: 2, sm: 3 } }}>
+            Ordenes
+          </Typography>
+          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+            <Tabs
+              value={value}
+              onChange={handleChange}
+              aria-label="orders tabs"
+              sx={{
+                // Cambia el color del indicador
+                '& .MuiTabs-indicator': {
+                  backgroundColor: prefersDarkMode ? '#fff' : '#000',
+                },
+              }}
+            >
+              <Tab
+                label="En progreso"
+                {...a11yProps(0)}
+                sx={{
+                  color: prefersDarkMode ? '#fff' : '#000',
+                  '&.Mui-selected': {
+                    color: prefersDarkMode ? '#fff' : '#000',
+                  },
+                }}
+              />
+              <Tab
+                label="Ordenes pasadas"
+                {...a11yProps(1)}
+                sx={{
+                  color: prefersDarkMode ? '#fff' : '#000',
+                  '&.Mui-selected': {
+                    color: prefersDarkMode ? '#fff' : '#000',
+                  },
+                }}
+              />
+            </Tabs>
+          </Box>
+
+          {/* Panel de Órdenes "En progreso" */}
+          <CustomTabPanel value={value} index={0}>
+            {loading ? (
+              <Typography>Cargando...</Typography>
+            ) : inProgressOrders.length === 0 ? (
+              <Typography>No hay órdenes en progreso.</Typography>
+            ) : (
+              <List
+                sx={{
+                  width: '100%',
+                  bgcolor: 'background.paper',
+                  marginLeft: 0,
+                  paddingLeft: 0,
+                  '& .MuiListItem-root': {
+                    paddingLeft: 0,
+                  },
+                }}
+              >
+                {inProgressOrders.map((order, index) => (
+                  <React.Fragment key={order.id_pedido}>
+                    <ListItem
+                      // Quita la prop 'button', usa 'component="button"' para MUI v5+
+                      component="button"
+                      onClick={() => {
+                        setOrderDetails(order);
+                        router.push('/ordenes/detalles');
+                      }}
+                      sx={{ cursor: 'pointer' }}
+                    >
+                      <ListItemAvatar>
+                        <Avatar sx={{ bgcolor: backgroundColor }}>
+                          {getStatusIcon(order.estatus, backgroundColor)}
+                        </Avatar>
+                      </ListItemAvatar>
+                      <ListItemText 
+                        primary={<Typography fontWeight="bold">{`Orden #${order.id_pedido}`}</Typography>} 
+                        secondary={`${getStatusText(order.estatus)} • ${new Date(order.fecha).toLocaleDateString()}`}
+                      />
+                    </ListItem>
+                    {index < inProgressOrders.length - 1 && <Divider variant="inset" component="li" />}
+                  </React.Fragment>
+                ))}
+              </List>
+            )}
+          </CustomTabPanel>
+          
+          {/* Panel de Órdenes "Pasadas" */}
+          <CustomTabPanel value={value} index={1}>
+            {loading ? (
+              <Typography>Cargando...</Typography>
+            ) : pastOrders.length === 0 ? (
+              <Typography>No hay órdenes pasadas.</Typography>
+            ) : (
+              <List
+                sx={{
+                  width: '100%',
+                  bgcolor: 'background.paper',
+                  marginLeft: 0,
+                  paddingLeft: 0,
+                  '& .MuiListItem-root': {
+                    paddingLeft: 0,
+                  },
+                }}
+              >
+                {pastOrders.map((order, index) => (
+                  <React.Fragment key={order.id_pedido}>
+                    <ListItem
+                      component="button"
+                      onClick={() => {
+                        setOrderDetails(order);
+                        router.push('/ordenes/detalles');
+                      }}
+                      sx={{ cursor: 'pointer' }}
+                    >
+                      <ListItemAvatar>
+                        <Avatar sx={{ bgcolor: backgroundColor }}>
+                          {getStatusIcon(order.estatus, backgroundColor)}
+                        </Avatar>
+                      </ListItemAvatar>
+                      <ListItemText 
+                        primary={<Typography fontWeight="bold">{`Orden #${order.id_pedido}`}</Typography>} 
+                        secondary={`${getStatusText(order.estatus)} • ${new Date(order.fecha).toLocaleDateString()}`}
+                      />
+                    </ListItem>
+                    {index < pastOrders.length - 1 && <Divider variant="inset" component="li" />}
+                  </React.Fragment>
+                ))}
+              </List>
+            )}
+          </CustomTabPanel>
         </Box>
-
-        {/* Panel de Órdenes "In Progress" */}
-        <CustomTabPanel value={value} index={0}>
-          <List sx={{ width: '100%', bgcolor: 'background.paper' }}>
-            {inProgressOrders.map((order, index) => (
-              <React.Fragment key={order.id}>
-                <ListItem>
-                  <ListItemAvatar>
-                    <Avatar sx={{ bgcolor: 'error.main' }}>
-                      <AccessTime />
-                    </Avatar>
-                  </ListItemAvatar>
-                  <ListItemText 
-                    primary={<Typography fontWeight="bold">{`Order #${order.orderNumber}`}</Typography>} 
-                    secondary={`${order.status} • ${order.date}`}
-                  />
-                </ListItem>
-                {index < inProgressOrders.length - 1 && <Divider variant="inset" component="li" />}
-              </React.Fragment>
-            ))}
-          </List>
-        </CustomTabPanel>
-        
-        {/* Panel de Órdenes "Past Orders" */}
-        <CustomTabPanel value={value} index={1}>
-          <List sx={{ width: '100%', bgcolor: 'background.paper' }}>
-            {pastOrders.map((order, index) => (
-              <React.Fragment key={order.id}>
-                <ListItem>
-                  <ListItemAvatar>
-                    <Avatar sx={{ bgcolor: 'error.main' }}>
-                      <Check />
-                    </Avatar>
-                  </ListItemAvatar>
-                  <ListItemText 
-                    primary={<Typography fontWeight="bold">{`Order #${order.orderNumber}`}</Typography>} 
-                    secondary={`${order.status} • ${order.date}`}
-                  />
-                </ListItem>
-                {index < pastOrders.length - 1 && <Divider variant="inset" component="li" />}
-              </React.Fragment>
-            ))}
-          </List>
-        </CustomTabPanel>
-      </Box>
-    </ThemeProvider>
-  );
+      </ThemeProvider>
+    );
 }

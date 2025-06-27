@@ -1,14 +1,21 @@
+// Configuración Next
 import type { Metadata } from "next";
-import {
-  ClerkProvider,
-  SignInButton,
-  SignUpButton,
-  SignedIn,
-  SignedOut,
-  UserButton,
-} from '@clerk/nextjs'
+
+// Fuentes
 import { Geist, Geist_Mono } from "next/font/google";
+
+// Hoja de estilo
 import "./globals.css";
+
+// Providers para el contexto
+import { ClerkProvider } from '@clerk/nextjs'
+import { SearchProvider } from "@/context/SearchContext";
+import { OrderDetailsProvider } from '@/context/OrderDetailsContext';
+
+// Componentes para tareas iniciales
+import GlobalModals from "@/components/GlobalModals";
+import UsuarioInitializer from "@/components/Clerk/UsuarioInitializer";
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,13 +39,19 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang="en">
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        >
-          {children}
-        </body>
-      </html>
+      <SearchProvider>
+        <OrderDetailsProvider>
+          <html lang="en">
+            <body
+              className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+            >
+              <UsuarioInitializer />
+              {children}
+              <GlobalModals />
+            </body>
+          </html>
+        </OrderDetailsProvider>
+      </SearchProvider>
     </ClerkProvider>
   );
 }

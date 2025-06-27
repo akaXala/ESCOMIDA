@@ -26,9 +26,13 @@ import NotificationsIcon from '@mui/icons-material/Notifications';
 import FixedNavBarKitchen from '@/components/FixedNavBarKitchen'
 
 export default function Home() {
+    // Estado para saber si estamos en el cliente
+    const [mounted, setMounted] = React.useState(false);
+    React.useEffect(() => { setMounted(true); }, []);
+
     // Detecta si el sistema está en dark mode
     const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
-    const theme = React.useMemo(() => getCustomTheme(prefersDarkMode ? 'dark' : 'light'), [prefersDarkMode]);
+    const theme = React.useMemo(() => getCustomTheme(mounted && prefersDarkMode ? 'dark' : 'light'), [mounted, prefersDarkMode]);
 
     // Sesiones Clerk
     const { isSignedIn, signOut } = useAuth();
@@ -72,18 +76,10 @@ export default function Home() {
         borderRadius: '20px', // Bordes redondeados
         minWidth: '250px', // Ancho mínimo para consistencia
     };
-    // Datos de ejemplo para el dashboard (estos vendrían de tu backend o estado)
-    const dashboardStats = {
-        pendingOrdersCount: 5,
-        newNotifications: 2,
-        todayPrepared: 15, // Ejemplo: platillos preparados hoy
-        recentActivity: [
-            { id: 1, text: 'Nueva orden #789 recibida.', time: 'Hace 5 min' },
-            { id: 2, text: 'Platillo "Tacos al Pastor" marcado como listo.', time: 'Hace 15 min' },
-            { id: 3, text: 'Alerta: Ingrediente "Aguacate" bajo en stock.', time: 'Hace 1 hora' },
-        ],
-    };
-       return (
+
+    if (!mounted) return null;
+
+    return (
         <ThemeProvider theme={theme}>
             <CssBaseline />
             <Box

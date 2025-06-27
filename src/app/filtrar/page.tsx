@@ -13,17 +13,22 @@ import { useSearchParams } from 'next/navigation';
 // Importa los componentes custom
 import FixedNavBar from '@/components/FixedNavBar';
 import RightDrawer from '@/components/RightDrawer';
-import ModalSearch from '@/components/ModalSearch';
 import DishCard from '@/components/DishCard';
 
 // Importa el tema custom
 import { getCustomTheme } from '@/components/MUI/CustomTheme';
-
+import { useSearch } from '@/context/SearchContext';
 
 export default function Home() {
+  // Estado para saber si estamos en el cliente
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => { setMounted(true); }, []);
+
   // Estados para el drawer y el modal
   const [drawerOpen, setDrawerOpen] = React.useState(false);
-  const [searchOpen, setSearchOpen] = React.useState(false);
+
+  // Usa el contexto global para abrir el modal
+  const { openSearch } = useSearch();
 
   // Parametros de busqueda
   const searchParams = useSearchParams();
@@ -32,10 +37,10 @@ export default function Home() {
 
   // Detecta si el sistema está en dark mode
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
-  const theme = React.useMemo(() => getCustomTheme(prefersDarkMode ? 'dark' : 'light'), [prefersDarkMode]);
+  const theme = React.useMemo(() => getCustomTheme(mounted && prefersDarkMode ? 'dark' : 'light'), [mounted, prefersDarkMode]);
 
   // Estados para los alimentos
-  const [alimentos, setAlimentos] = React.useState<{ id: number; nombre: string; precio: number; calorias: number }[]>([]);
+  const [alimentos, setAlimentos] = React.useState<{ id_alimento: number; nombre: string; precio: number; calorias: number, imagen: string }[]>([]);
 
   React.useEffect(() => {
       const fetchAlimentos = async () => {
@@ -59,17 +64,18 @@ export default function Home() {
       fetchAlimentos();
     }, []);
 
+  if (!mounted) return null;
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Box marginTop={12}>
+      <Box marginTop={{xs: 7, sm: 12}}>
         <FixedNavBar
           onAccountClick={() => setDrawerOpen(true)}
-          onSearchClick={() => setSearchOpen(true)}
+          onSearchClick={openSearch}
           currentTab={undefined}
         />
         <RightDrawer open={drawerOpen} setOpen={setDrawerOpen} />
-        <ModalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
 
         <Typography variant="h4" component="h1" sx={{ p: { xs: 2, sm: 3 }, marginX: { sm: 2} }}>
           {tipoU}
@@ -78,10 +84,11 @@ export default function Home() {
           {alimentos.map((alimento) => (
             <Grid size={4} key={alimento.nombre}>
               <DishCard
-                id={alimento.id}
+                id={alimento.id_alimento}
                 nombrePlatillo={alimento.nombre}
                 precio={alimento.precio}
                 calorias={alimento.calorias}
+                imagen={alimento.imagen}
                 />
             </Grid>
           ))}

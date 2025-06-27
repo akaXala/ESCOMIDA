@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from 'react';
+import { useSearch } from '@/context/SearchContext';
 
 // Componentes MUI
 import { Box, Grid, ThemeProvider, CssBaseline, useMediaQuery, Typography } from "@mui/material";
@@ -13,7 +14,6 @@ import { useRouter } from 'next/navigation';
 import FixedNavBar from '@/components/FixedNavBar';
 import RightDrawer from '@/components/RightDrawer';
 import SearchButton from '@/components/SearchButton';
-import ModalSearch from '@/components/ModalSearch';
 import Options from '@/components/Options';
 import ImageCarousel from '@/components/ImageCarousel';
 import DishCard from '@/components/DishCard';
@@ -36,26 +36,35 @@ const TipoAlimento = [
 ];
 
 export default function Home() {
+  // Estado para saber si estamos en el cliente
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => { setMounted(true); }, []);
+
   // Detecta si el sistema está en dark mode
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
-  const theme = React.useMemo(() => getCustomTheme(prefersDarkMode ? 'dark' : 'light'), [prefersDarkMode]);
+  const theme = React.useMemo(() => getCustomTheme(mounted && prefersDarkMode ? 'dark' : 'light'), [mounted, prefersDarkMode]);
 
   // Hook de MUI para acceder al tema y sus breakpoints
   const muiTheme = useTheme();
-  // Detecta si el ancho de la pantalla corresponde a un móvil (breakpoint 'sm' de MUI)
   const isMobile = useMediaQuery(muiTheme.breakpoints.down('sm'));
 
-  // Estados para el modal y el drawer
+  // Drawer
   const [drawerOpen, setDrawerOpen] = React.useState(false);
-  const [searchOpen, setSearchOpen] = React.useState(false);
 
-  // Estados para los alimentos
-  const [alimentos, setAlimentos] = React.useState<{ id: number; nombre: string; precio: number; calorias: number }[]>([]);
+  // Usa el contexto global para abrir el modal
+  const { openSearch } = useSearch();
+
+  // Estado global para los alimentos (solo se consulta una vez)
+  const [alimentos, setAlimentos] = React.useState<{ id_alimento: number; nombre: string; precio: number; calorias: number; imagen: string }[]>([]);
+  const alimentosFetched = React.useRef(false);
 
   // Navegación
   const router = useRouter();
 
   React.useEffect(() => {
+    // Solo consulta si no se ha hecho antes
+    if (alimentosFetched.current) return;
+    alimentosFetched.current = true;
     const fetchAlimentos = async () => {
       try {
         const res = await fetch('/api/alimentos');
@@ -90,22 +99,23 @@ export default function Home() {
     />
   );
 
+  if (!mounted) return null;
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Box marginTop={12}>
+      <Box marginTop={{xs: 7, sm: 12}}>
         <Grid container>
           <FixedNavBar
             onAccountClick={() => setDrawerOpen(true)}
-            onSearchClick={() => setSearchOpen(true)}
+            onSearchClick={openSearch}
             currentTab="home"
           />
           <RightDrawer open={drawerOpen} setOpen={setDrawerOpen} />
-          <SearchButton onClick={() => setSearchOpen(true)} />
-          <ModalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
+          <SearchButton onClick={openSearch} />
         </Grid>
 
-        {isMobile ? (
+        {mounted && isMobile ? (
           // Vista de Carrusel para Móviles
           <Box
             sx={{
@@ -171,10 +181,11 @@ export default function Home() {
           {alimentos.map((alimento) => (
             <Box key={alimento.nombre} sx={{ flex: '0 0 auto' }}> {/* Contenedor para cada tarjeta */}
               <DishCard
-                id={alimento.id}
+                id={alimento.id_alimento}
                 nombrePlatillo={alimento.nombre}
                 precio={alimento.precio}
                 calorias={alimento.calorias}
+                imagen={alimento.imagen}
               />
             </Box>
           ))}

@@ -17,10 +17,10 @@ export const POST = async (req: NextRequest) => {
 
         // Escribimos la query
         const query = `
-            SELECT id, nombre, precio, calorias 
+            SELECT id_alimento, nombre, precio, calorias, imagen 
             FROM alimento 
             WHERE categoria = $1
-        `
+        `;
 
         // Valores
         const values = [categoria];

@@ -24,3 +24,13 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Alertas modo oscuro */
+.dark-swal-popup { border-radius: 1rem !important; }
+.dark-swal-title { font-weight: 700 !important; }
+.dark-swal-confirm { font-weight: 600 !important; letter-spacing: 0.05em !important; }
+
+/* Alertas modo claro */
+.light-swal-popup { border-radius: 1rem !important; }
+.light-swal-title { font-weight: 700 !important; }
+.light-swal-confirm { font-weight: 600 !important; letter-spacing: 0.05em !important; }

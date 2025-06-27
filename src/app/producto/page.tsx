@@ -15,11 +15,14 @@ import {
   MenuItem,
   InputLabel,
   FormControl,
+  IconButton, // <-- NUEVO: Para el botón del icono
 } from '@mui/material';
 
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder'; // <-- NUEVO: Icono de corazón vacío
+import FavoriteIcon from '@mui/icons-material/Favorite'; // <-- NUEVO: Icono de corazón lleno
 
 // Alertas
 import { mostrarAlerta } from '@/components/SweetAlert/modalAlerts';
@@ -35,9 +38,8 @@ import { useSearchParams } from 'next/navigation';
 
 // Importa el tema custom
 import { getCustomTheme } from '@/components/MUI/CustomTheme';
-import { useAuth } from "@clerk/nextjs"; // Agrega esta línea si no está
+import { useAuth } from "@clerk/nextjs"; 
 
-// La interfaz para los ingredientes no cambia
 interface Ingredient {
   id: string;
   label: string;
@@ -46,16 +48,13 @@ interface Ingredient {
 }
 
 export default function Home() {
-  // Estado para saber si estamos en el cliente
   const [mounted, setMounted] = React.useState(false);
   React.useEffect(() => { setMounted(true); }, []);
 
-  // Detecta si el sistema está en dark mode
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
   const theme = React.useMemo(() => getCustomTheme(mounted && prefersDarkMode ? 'dark' : 'light'), [mounted, prefersDarkMode]);
   const themeMode = mounted && prefersDarkMode ? 'dark' : 'light';
 
-  // Parametros de busqueda
   const searchParams = useSearchParams();
   const id_alimento = searchParams.get('id');
 
@@ -66,15 +65,16 @@ export default function Home() {
   const [requiredIngredients, setRequiredIngredients] = React.useState<Ingredient[]>([]);
   const [optionalIngredients, setOptionalIngredients] = React.useState<Ingredient[]>([]);
 
-  // Estado para los datos del alimento
   const [alimento, setAlimento] = React.useState<any>(null);
   const [loading, setLoading] = React.useState(false);
 
-  // Estados para salsa y extras
   const [salsas, setSalsas] = React.useState<string[]>([]);
   const [selectedSalsa, setSelectedSalsa] = React.useState<string>('');
   const [extras, setExtras] = React.useState<string[]>([]);
   const [selectedExtra, setSelectedExtra] = React.useState<string>('');
+  
+  // <-- NUEVO: Estado para el corazón de favorito -->
+  const [isFavorite, setIsFavorite] = React.useState(false);
 
   const { isLoaded, isSignedIn } = useAuth();
   const router = useRouter();
@@ -110,8 +110,6 @@ export default function Home() {
           } else {
             setOptionalIngredients([]);
           }
-
-          // Salsas
           if (data.data[0].salsa) {
             const salsasArr = data.data[0].salsa.split(',').map((s: string) => s.trim());
             setSalsas(salsasArr);
@@ -120,7 +118,6 @@ export default function Home() {
             setSalsas([]);
             setSelectedSalsa('');
           }
-          // Extras
           if (data.data[0].extra) {
             const extrasArr = data.data[0].extra.split(',').map((e: string) => e.trim());
             setExtras(extrasArr);
@@ -134,6 +131,20 @@ export default function Home() {
       .finally(() => setLoading(false));
   }, [id_alimento]);
 
+  // Verifica si el alimento es favorito al cargar
+  React.useEffect(() => {
+    if (!id_alimento) return;
+    fetch('/api/favoritos/check', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id_alimento }),
+    })
+      .then(res => res.json())
+      .then(data => {
+        setIsFavorite(data.isFavorite === true);
+      });
+  }, [id_alimento]);
+
   const handleOptionalChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setOptionalIngredients(
       optionalIngredients.map((ingredient) =>
@@ -143,17 +154,50 @@ export default function Home() {
       )
     );
   };
-
-  const addCart = async () => {
-    // Verifica si está logueado
+  
+  // <-- NUEVO: Función para manejar el clic en el corazón -->
+  const handleFavoriteToggle = async () => {
     if (isLoaded && !isSignedIn) {
       router.replace(`/sign-in?redirect_url=/producto?id=${id_alimento}`);
       return;
-  }
+    }
+    if (!id_alimento) return;
 
+    if (!isFavorite) {
+      // Agregar a favoritos
+      const res = await fetch('/api/favoritos/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id_alimento }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setIsFavorite(true);
+      } else {
+        mostrarAlerta("Error", data.error || "No se pudo añadir a favoritos.", "Aceptar", "error", themeMode);
+      }
+    } else {
+      // Eliminar de favoritos
+      const res = await fetch('/api/favoritos/remove', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id_alimento }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setIsFavorite(false);
+      } else {
+        mostrarAlerta("Error", data.error || "No se pudo eliminar de favoritos.", "Aceptar", "error", themeMode);
+      }
+    }
+  };
+
+  const addCart = async () => {
+    if (isLoaded && !isSignedIn) {
+      router.replace(`/sign-in?redirect_url=/producto?id=${id_alimento}`);
+      return;
+    }
     if (!alimento) return;
-
-    // Construye los campos requeridos por el endpoint
     const payload = {
       categoria: alimento.categoria,
       nombre: alimento.nombre,
@@ -163,10 +207,9 @@ export default function Home() {
       ingredientes_opcionales: optionalIngredients.filter(i => i.checked).map(i => i.label).join(','),
       precio: alimento.precio,
       imagen: alimento.imagen,
-      cantidad: 1, // O el valor que desees
+      cantidad: 1,
       id_original: alimento.id_alimento,
     };
-
     try {
       const response = await fetch("/api/alimentos/anadir", {
         method: "POST",
@@ -175,14 +218,13 @@ export default function Home() {
       });
       const data = await response.json();
       if (data.success) {
-        mostrarAlerta("Producto añadido al carrito", `${alimento.nombre} se añadio correctamente`, "Aceptar", "success");
+        mostrarAlerta("Producto añadido al carrito", `${alimento.nombre} se añadio correctamente`, "Aceptar", "success", themeMode);
         router.push("/");
       } else {
-        mostrarAlerta("Error al añadir", `Error: ${data.error}`, "Aceptar", "error");
+        mostrarAlerta("Error al añadir", `Error: ${data.error}`, "Aceptar", "error", themeMode);
       }
     } catch (error) {
-      mostrarAlerta("Error", "Error al añadir", "Aceptar", "error");
-      alert("Error al añadir producto");
+      mostrarAlerta("Error", "Error al añadir", "Aceptar", "error", themeMode);
     }
   };
 
@@ -191,8 +233,27 @@ export default function Home() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline/>
-      <Box sx={{ width: '100wh', height: '100vh', py: { xs: 2, md: 5 }, px: { xs: 2, md: 4 } }}>
-        {/* Sección superior: Imagen y Título */}
+      {/* MODIFICADO: Añadido position: 'relative' para que el botón se posicione correctamente sin afectar al resto */}
+      <Box sx={{ width: '100wh', height: '100vh', py: { xs: 2, md: 5 }, px: { xs: 2, md: 4 }, position: 'relative' }}>
+        
+        {/* <-- NUEVO: Icono de corazón en la esquina superior derecha --> */}
+        <IconButton
+          aria-label="añadir a favoritos"
+          onClick={handleFavoriteToggle}
+          sx={{
+            position: 'absolute',
+            top: { xs: 16, md: 24 },
+            right: { xs: 16, md: 24 },
+          }}
+        >
+          {isFavorite ? (
+            <FavoriteIcon sx={{ color: 'red', fontSize: 30 }} />
+          ) : (
+            <FavoriteBorderIcon sx={{ fontSize: 30, color: 'text.secondary' }} />
+          )}
+        </IconButton>
+
+        {/* Sección superior: Imagen y Título (SIN CAMBIOS) */}
         <Box sx={{ textAlign: 'center', mb: 4 }}>
           <Box
             component="img"
@@ -230,7 +291,7 @@ export default function Home() {
 
         <Divider sx={{ mb: 4 }} />
 
-        {/* Contenedor de Grid para las columnas de ingredientes */}
+        {/* Contenedor de Grid para las columnas de ingredientes (SIN CAMBIOS, devuelto a su estado original) */}
         <Grid container spacing={{ xs: 2, md: 4 }} textAlign="center">
           {/* Columna Izquierda: Ingredientes Obligatorios */}
           <Grid size={{ xs: 12, md: 6 }}>
@@ -259,7 +320,6 @@ export default function Home() {
                   />
                 ))}
               </FormGroup>
-              {/* Selector de salsa si existe */}
               {salsas.length > 0 && (
                 <FormControl sx={{ mt: 2, minWidth: 180, width: { xs: '100%', md: 180 } }}>
                   <InputLabel id="salsa-label">Salsa</InputLabel>
@@ -269,15 +329,9 @@ export default function Home() {
                     label="Salsa"
                     onChange={e => setSelectedSalsa(e.target.value)}
                     sx={{
-                      '.MuiOutlinedInput-notchedOutline': {
-                        borderColor: borderColor,
-                      },
-                      '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: borderHoverColor,
-                      },
-                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                        borderColor: borderFocusedColor,
-                      },
+                      '.MuiOutlinedInput-notchedOutline': { borderColor: borderColor, },
+                      '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: borderHoverColor, },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: borderFocusedColor, },
                     }}
                   >
                     {salsas.map((salsa, idx) => (
@@ -289,7 +343,6 @@ export default function Home() {
             </Box>
           </Grid>
 
-          {/* Divider solo en móvil antes de ingredientes opcionales */}
           <Grid size={12} sx={{ display: { xs: 'block', md: 'none' }, my: 2 }}>
             <Divider />
           </Grid>
@@ -328,7 +381,6 @@ export default function Home() {
                   ))
                 )}
               </FormGroup>
-              {/* Selector de extras si existe */}
               {extras.length > 0 && (
                 <FormControl sx={{ mt: 2, minWidth: 180, width: { xs: '100%', md: 180 } }}>
                   <InputLabel id="extras-label">Extra</InputLabel>
@@ -338,15 +390,9 @@ export default function Home() {
                     label="Extra"
                     onChange={e => setSelectedExtra(e.target.value)}
                     sx={{
-                      '.MuiOutlinedInput-notchedOutline': {
-                        borderColor: borderColor,
-                      },
-                      '&:hover .MuiOutlinedInput-notchedOutline': {
-                        borderColor: borderHoverColor,
-                      },
-                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                        borderColor: borderFocusedColor,
-                      },
+                      '.MuiOutlinedInput-notchedOutline': { borderColor: borderColor, },
+                      '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: borderHoverColor, },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: borderFocusedColor, },
                     }}
                   >
                     <MenuItem value="Sin extra">Sin extra</MenuItem>
@@ -360,7 +406,7 @@ export default function Home() {
           </Grid>
         </Grid>
         
-        {/* Sección del Botón */}
+        {/* Sección del Botón (SIN CAMBIOS) */}
         <Box sx={{ mt: 5, display: 'flex', justifyContent: 'center' }}>
             <Button
             variant="contained"
@@ -374,13 +420,12 @@ export default function Home() {
                 bgcolor: borderColor,
             }}
             startIcon={<AddShoppingCartIcon />}
-            onClick={addCart} // <-- Agrega el handler aquí
+            onClick={addCart}
             >
               Añadir producto
             </Button>
         </Box>
       </Box>
     </ThemeProvider>
-    
   );
 }

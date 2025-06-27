@@ -24,18 +24,18 @@ export async function GET(request: Request) {
       const createCart = `INSERT INTO carrito (id) VALUES ($1)`;
       await pool.query(createCart, values);
 
+      // Devuelve success y data con el usuario recién creado (sin número)
       return NextResponse.json(
-        { success: true },
+        { success: true, data: { id: userId, telefono: null } },
         { status: 201 }
       );
     }
 
-    // Si ya existe, solo regresamos success
+    // Devuelve success y los datos del usuario
     return NextResponse.json(
-      { success: true },
+      { success: true, data: result.rows[0] },
       { status: 200 }
     );
-
   } catch (error) {
     console.error("Error al obtener o registrar el usuario:", error);
     return NextResponse.json(

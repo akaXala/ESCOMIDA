@@ -15,9 +15,9 @@ interface CarouselItemProps {
 // Datos de ejemplo para el carrusel
 const items: CarouselItemProps[] = [
   {
-    name: 'Nuevas exquisitas hamburguesas',
-    description: '¡La mejor hamburguesa que probarás!',
-    imgSrc: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=1998&auto=format&fit=crop', // Imagen de ejemplo 1
+    name: 'Prueba nuestros desayunos',
+    description: 'Nada mejor que empezar bien el día',
+    imgSrc: 'https://comedera.com/wp-content/uploads/sites/9/2022/12/Desayono-americano-shutterstock_2120331371.jpg', // Imagen de ejemplo 1
     href: '/ofertas/premium',
   },
   {
@@ -126,10 +126,30 @@ function Item({ item }: { item: CarouselItemProps }) {
             padding: '20px',
           }}
         >
-          <Typography variant="h2" component="h2" fontWeight="bold">
+          <Typography
+            variant="h2"
+            component="h2"
+            fontWeight="bold"
+            sx={{
+              fontSize: { xs: '1.2rem', sm: '2.5rem', md: '3rem' },
+              '@media (max-width:600px)': {
+                fontSize: '1.2rem',
+              },
+            }}
+          >
             {item.name}
           </Typography>
-          <Typography variant="h5" component="p" sx={{ mt: 1 }}>
+          <Typography
+            variant="h5"
+            component="p"
+            sx={{
+              mt: 1,
+              fontSize: { xs: '0.9rem', sm: '1.3rem', md: '1.7rem' },
+              '@media (max-width:600px)': {
+                fontSize: '0.9rem',
+              },
+            }}
+          >
             {item.description}
           </Typography>
         </Box>

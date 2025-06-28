@@ -5,6 +5,7 @@ import CardMedia from '@mui/material/CardMedia';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Link from 'next/link';
+import StarIcon from '@mui/icons-material/Star';
 
 // Define las propiedades que el componente recibirá
 interface DishCardProps {
@@ -13,12 +14,13 @@ interface DishCardProps {
   precio: number;
   calorias: number;
   imagen?: string;
+  rating?: number; // Promedio de calificación (opcional)
+  totalResenas?: number; // Número de reseñas (opcional)
 }
 
-const DishCard: React.FC<DishCardProps> = ({ id, nombrePlatillo, precio, calorias, imagen }) => {
+const DishCard: React.FC<DishCardProps> = ({ id, nombrePlatillo, precio, calorias, imagen, rating, totalResenas }) => {
   return (
-    <Link href={`/producto?id=${id}`} style={{ textDecoration: 'none' }}>
-      {/* CAMBIO 1: Se añade 'height' y se convierte la Card en un contenedor flex column */}
+    <Link href={`/producto?id=${id}`} style={{ textDecoration: 'none', position: 'relative' }}>
       <Card sx={{
         width: 345, // Usamos 'width' en lugar de 'maxWidth' para un tamaño fijo
         height: '100%', // La tarjeta ocupará toda la altura de su contenedor padre (ideal para grids)
@@ -26,15 +28,43 @@ const DishCard: React.FC<DishCardProps> = ({ id, nombrePlatillo, precio, caloria
         boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
         cursor: 'pointer',
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        position: 'relative',
       }}>
-        <CardMedia
-          component="img"
-          height="200" // Altura fija para todas las imágenes
-          image={imagen}
-          alt={`Imagen de ${nombrePlatillo}`}
-          sx={{ objectFit: 'cover' }} // 'cover' asegura que la imagen llene el espacio sin deformarse
-        />
+        <Box sx={{ position: 'relative' }}>
+          <CardMedia
+            component="img"
+            height="200" // Altura fija para todas las imágenes
+            image={imagen}
+            alt={`Imagen de ${nombrePlatillo}`}
+            sx={{ objectFit: 'cover' }} // 'cover' asegura que la imagen llene el espacio sin deformarse
+          />
+          {/* Estrella y calificación en la esquina superior derecha */}
+          {typeof rating === 'number' && (
+            <Box sx={{
+              position: 'absolute',
+              top: 8,
+              right: 8,
+              bgcolor: 'rgba(0,0,0,0.7)',
+              borderRadius: '16px',
+              px: 1.2,
+              py: 0.3,
+              display: 'flex',
+              alignItems: 'center',
+              zIndex: 2,
+            }}>
+              <StarIcon sx={{ color: '#FFD700', fontSize: 20, mr: 0.3 }} />
+              <Typography variant="body2" color="white" fontWeight="bold">
+                {rating.toFixed(1)}
+              </Typography>
+              {typeof totalResenas === 'number' && (
+                <Typography variant="caption" color="white" sx={{ ml: 0.5 }}>
+                  ({totalResenas})
+                </Typography>
+              )}
+            </Box>
+          )}
+        </Box>
         {/* CAMBIO 2: El CardContent también es flex y crecerá para llenar el espacio sobrante */}
         <CardContent sx={{
           display: 'flex',

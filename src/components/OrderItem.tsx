@@ -1,7 +1,7 @@
 // components/OrderItem.tsx
 
 import React from 'react';
-import { Avatar, Box, Typography, Stack } from '@mui/material';
+import { Avatar, Box, Typography, Stack, useTheme } from '@mui/material';
 
 // 1. INTERFAZ ACTUALIZADA: Añadimos 'price' y 'currencySymbol'
 interface OrderItemProps {
@@ -33,11 +33,18 @@ const OrderItem: React.FC<OrderItemProps> = ({
   final_price,
   currencySymbol = '$',
 }) => {
+  const theme = useTheme();
     // 4. LÓGICA PARA COMBINAR INGREDIENTES
     const allIngredients = [
         ...ingredientes_obligatorios,
         ...(ingredientes_opcionales || []),
     ];
+
+    // Colores adaptativos
+    const bgColor = theme.palette.mode === 'dark' ? '#1e1e2f' : '#fff';
+    const textColor = theme.palette.mode === 'dark' ? '#fff' : '#222';
+    const subTextColor = theme.palette.mode === 'dark' ? '#c0bacc' : '#666';
+    const avatarBg = theme.palette.mode === 'dark' ? '#4a4a6a' : '#e0e0e0';
 
   return (
     <Box
@@ -45,10 +52,11 @@ const OrderItem: React.FC<OrderItemProps> = ({
         display: 'flex',
         alignItems: 'flex-start',
         p: 2,
-        backgroundColor: '#1e1e2f',
+        backgroundColor: bgColor,
         borderRadius: 2,
-        width: '100%', // Abarca todo el ancho disponible
-        color: '#ffffff',
+        width: '100%',
+        color: textColor,
+        boxShadow: theme.palette.mode === 'dark' ? 0 : 2,
       }}
     >
       {/* Avatar Cuadrado */}
@@ -56,11 +64,12 @@ const OrderItem: React.FC<OrderItemProps> = ({
         variant="rounded"
         src={image}
         sx={{
-          bgcolor: '#4a4a6a',
+          bgcolor: avatarBg,
           width: 56,
           height: 56,
           mr: 2,
           fontSize: '1.5rem',
+          color: textColor,
         }}
       >
         {/* Muestra la inicial si no hay imagen */}
@@ -75,20 +84,20 @@ const OrderItem: React.FC<OrderItemProps> = ({
           
           {/* Columna Izquierda: Título y Categoría */}
           <Stack direction="column" sx={{ maxWidth: 'calc(100% - 100px)' }}>
-            <Typography variant="h6" component="div" fontWeight="bold">
+            <Typography variant="h6" component="div" fontWeight="bold" sx={{ color: textColor }}>
               {title}
             </Typography>
-            <Typography variant="body2" sx={{ color: '#c0bacc' }}>
+            <Typography variant="body2" sx={{ color: subTextColor }}>
               {category}
             </Typography>
           </Stack>
 
           {/* Columna Derecha: Precio y Descripción */}
           <Stack direction="column" alignItems="flex-end" sx={{ minWidth: '90px' }}> {/* Ancho mínimo para el precio */}
-            <Typography variant="h6" component="div" fontWeight="bold" noWrap>
+            <Typography variant="h6" component="div" fontWeight="bold" noWrap sx={{ color: textColor }}>
               {`${currencySymbol}${final_price.toFixed(2)}`}
             </Typography>
-            <Typography variant="caption" sx={{ color: '#c0bacc' }}>
+            <Typography variant="caption" sx={{ color: subTextColor }}>
               Precio total
             </Typography>
           </Stack>
@@ -96,20 +105,20 @@ const OrderItem: React.FC<OrderItemProps> = ({
 
         {/* 3. SECCIÓN INFERIOR: Detalles del platillo */}
         <Box sx={{ mt: 1 }}> {/* Margen superior para separar de la sección de arriba */}
-          <Typography variant="body2">
+          <Typography variant="body2" sx={{ color: textColor }}>
             Cantidad: {quantity}
           </Typography>
-          <Typography variant="body2">
+          <Typography variant="body2" sx={{ color: textColor }}>
             Precio unitario: {`${currencySymbol}${price.toFixed(2)}`}
           </Typography>
-          <Typography variant="body2" sx={{ mt: 1 }}>
+          <Typography variant="body2" sx={{ mt: 1, color: textColor }}>
             <Box component="span" sx={{ fontWeight: 'bold' }}>
               Ingredientes:
             </Box>{' '}
             {allIngredients.join(', ')}
           </Typography>
           {Array.isArray(salsas) && salsas.filter(s => s && s.trim() !== '').length > 0 && (
-            <Typography variant="body2">
+            <Typography variant="body2" sx={{ color: textColor }}>
               <Box component="span" sx={{ fontWeight: 'bold' }}>
                 Salsas:
               </Box>{' '}
@@ -117,7 +126,7 @@ const OrderItem: React.FC<OrderItemProps> = ({
             </Typography>
           )}
           {Array.isArray(extras) && extras.filter(e => e && e.trim() !== '').length > 0 && (
-            <Typography variant="body2">
+            <Typography variant="body2" sx={{ color: textColor }}>
               <Box component="span" sx={{ fontWeight: 'bold' }}>
                 Extras:
               </Box>{' '}

@@ -42,6 +42,9 @@ export default function Home() {
   // Estados para los alimentos
   const [alimentos, setAlimentos] = React.useState<{ id_alimento: number; nombre: string; precio: number; calorias: number, imagen: string }[]>([]);
 
+  // Estado para los promedios de los alimentos filtrados
+  const [alimentosRatings, setAlimentosRatings] = React.useState<{ [id: number]: number }>({});
+
   React.useEffect(() => {
       const fetchAlimentos = async () => {
         try {
@@ -64,6 +67,25 @@ export default function Home() {
       fetchAlimentos();
     }, []);
 
+  React.useEffect(() => {
+    if (alimentos.length === 0) return;
+    const fetchRatings = async () => {
+      try {
+        const ids = alimentos.map(a => a.id_alimento);
+        const res = await fetch('/api/alimentos/calificacion', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ids })
+        });
+        const data = await res.json();
+        if (data.success && data.ratings) {
+          setAlimentosRatings(data.ratings);
+        }
+      } catch {}
+    };
+    fetchRatings();
+  }, [alimentos]);
+
   if (!mounted) return null;
 
   return (
@@ -80,16 +102,17 @@ export default function Home() {
         <Typography variant="h4" component="h1" sx={{ p: { xs: 2, sm: 3 }, marginX: { sm: 2} }}>
           {tipoU}
         </Typography>
-        <Grid container sx={{ marginX: { xs: 2, sm: 5 } }}>
+        <Grid container sx={{ maxWidth: '1200px', mx: 'auto', px: { xs: 2, sm: 0 }, justifyContent: 'center' }}>
           {alimentos.map((alimento) => (
-            <Grid size={4} key={alimento.nombre}>
+            <Grid size={{xs: 12, md: 4}} key={alimento.nombre} sx={{ marginY: { xs: 1, sm: 3} }}>
               <DishCard
                 id={alimento.id_alimento}
                 nombrePlatillo={alimento.nombre}
                 precio={alimento.precio}
                 calorias={alimento.calorias}
                 imagen={alimento.imagen}
-                />
+                rating={alimentosRatings[alimento.id_alimento]}
+              />
             </Grid>
           ))}
         </Grid>

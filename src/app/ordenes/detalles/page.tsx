@@ -81,7 +81,6 @@ export default function Home() {
         try {
           if (!orderDetails) router.replace('/ordenes');
           setLoading(true);
-          console.log("Consulta")
 
           const res = await fetch('/api/ordenes/mostrar-detalles', {
             method: 'POST',
@@ -114,7 +113,7 @@ export default function Home() {
                     <FixedNavBar
                         onAccountClick={() => setDrawerOpen(true)}
                         onSearchClick={openSearch}
-                        currentTab={undefined}
+                        currentTab="orders"
                     />
                     <RightDrawer open={drawerOpen} setOpen={setDrawerOpen} />
                 </Grid>
@@ -146,7 +145,7 @@ export default function Home() {
                     <Typography variant='h5'>Tu orden</Typography>
                   </Grid>
                   <Grid size={12}>
-                    <Typography variant='overline'>N items</Typography>
+                    <Typography variant='overline'>{orderDetails.cantidad} items</Typography>
                   </Grid>
                 </Grid>
                 {/* Ejemplo de platillo estilo imagen */}
@@ -189,20 +188,51 @@ export default function Home() {
                     ))
                   )}
                 </Grid>
-                <Grid
-                  container
-                  sx={{ marginX: { xs: 2, sm: 5 }}}
-                >
+                <Grid container marginBottom={{xs: 2, sm: 3}} sx={{ marginX: { xs: 2, sm: 5 }}}>
                   <Grid size={12}>
                     <Typography variant='h5'>Resumen de pago</Typography>
                   </Grid>
                   <Grid size={12} marginTop={2}>
                     <Typography variant='h6'>Total: ${orderDetails.precio_total}</Typography>
                   </Grid>
-                  <Grid size={12} marginBottom={{ xs: 8.5, sm: 3}}>
+                  <Grid size={12} marginBottom={{ xs: 1, sm: 3}}>
                     <Typography variant='body2'>Forma de pago: </Typography>
                   </Grid>
                 </Grid>
+                {/* Botón Cancelar Pedido solo si el estatus es 'En espera' */}
+                {orderDetails.estatus === 'En espera' && (
+                  <Grid
+                    container
+                    sx={{
+                      marginX: { xs: 2, sm: 5 },
+                      mb: { xs: 8, sm: 4 },
+                      mt: { xs: 0, sm: 0 },
+                    }}
+                    justifyContent="center"
+                  >
+                    <Grid size={12}>
+                      <button
+                        style={{
+                          width: '100%',
+                          padding: '8px',
+                          backgroundColor: '#d32f2f',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: '8px',
+                          fontSize: '1.1rem',
+                          fontWeight: 'bold',
+                          cursor: 'pointer',
+                          marginTop: '0',
+                          marginBottom: '8px',
+                          transition: 'background 0.2s',
+                        }}
+                        onClick={() => alert('¿Seguro que deseas cancelar el pedido?')}
+                      >
+                        Cancelar pedido
+                      </button>
+                    </Grid>
+                  </Grid>
+                )}
             </Box>
         </ThemeProvider>
     );

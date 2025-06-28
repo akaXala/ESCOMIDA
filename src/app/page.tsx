@@ -58,8 +58,56 @@ export default function Home() {
   const [alimentos, setAlimentos] = React.useState<{ id_alimento: number; nombre: string; precio: number; calorias: number; imagen: string }[]>([]);
   const alimentosFetched = React.useRef(false);
 
+  // Estado para los favoritos del usuario
+  const [favoritos, setFavoritos] = React.useState<{ id_alimento: number; nombre: string; precio: number; calorias: number; imagen: string }[]>([]);
+
+  // Estado para los mejor calificados
+  const [mejorCalificados, setMejorCalificados] = React.useState<{ id_alimento: number; nombre: string; precio: number; calorias: number; imagen: string; promedio: number; total_resenas: number }[]>([]);
+
+  // Estado para los promedios de favoritos
+  const [favoritosRatings, setFavoritosRatings] = React.useState<{ [id: number]: number }>({});
+
+  // Estado para los promedios de mejor calificados
+  const [mejorCalificadosRatings, setMejorCalificadosRatings] = React.useState<{ [id: number]: number }>({});
+
+  // Estado para los promedios de todos los alimentos
+  const [alimentosRatings, setAlimentosRatings] = React.useState<{ [id: number]: number }>({});
+
   // Navegación
   const router = useRouter();
+
+  React.useEffect(() => {
+    if (!mounted) return;
+    const fetchMejorCalificados = async () => {
+      try {
+        const res = await fetch('/api/alimentos/mejor-calificados');
+        const data = await res.json();
+        if (data.success) {
+          setMejorCalificados(data.data);
+        }
+      } catch (error) {
+        // Silenciar error
+      }
+    };
+    fetchMejorCalificados();
+  }, [mounted]);
+
+  React.useEffect(() => {
+    // Solo consulta si está montado
+    if (!mounted) return;
+    const fetchFavoritos = async () => {
+      try {
+        const res = await fetch('/api/alimentos/favoritos');
+        const data = await res.json();
+        if (data.success) {
+          setFavoritos(data.data);
+        }
+      } catch (error) {
+        // Silenciar error si no está autenticado
+      }
+    };
+    fetchFavoritos();
+  }, [mounted]);
 
   React.useEffect(() => {
     // Solo consulta si no se ha hecho antes
@@ -79,6 +127,63 @@ export default function Home() {
     };
     fetchAlimentos();
   }, []);
+
+  React.useEffect(() => {
+    if (favoritos.length === 0) return;
+    const fetchRatings = async () => {
+      try {
+        const ids = favoritos.map(a => a.id_alimento);
+        const res = await fetch('/api/alimentos/calificacion', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ids })
+        });
+        const data = await res.json();
+        if (data.success && data.ratings) {
+          setFavoritosRatings(data.ratings);
+        }
+      } catch {}
+    };
+    fetchRatings();
+  }, [favoritos]);
+
+  React.useEffect(() => {
+    if (mejorCalificados.length === 0) return;
+    const fetchRatings = async () => {
+      try {
+        const ids = mejorCalificados.map(a => a.id_alimento);
+        const res = await fetch('/api/alimentos/calificacion', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ids })
+        });
+        const data = await res.json();
+        if (data.success && data.ratings) {
+          setMejorCalificadosRatings(data.ratings);
+        }
+      } catch {}
+    };
+    fetchRatings();
+  }, [mejorCalificados]);
+
+  React.useEffect(() => {
+    if (alimentos.length === 0) return;
+    const fetchRatings = async () => {
+      try {
+        const ids = alimentos.map(a => a.id_alimento);
+        const res = await fetch('/api/alimentos/calificacion', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ids })
+        });
+        const data = await res.json();
+        if (data.success && data.ratings) {
+          setAlimentosRatings(data.ratings);
+        }
+      } catch {}
+    };
+    fetchRatings();
+  }, [alimentos]);
 
   // Componente que renderiza cada una de las opciones
   interface TipoAlimentoItem {
@@ -104,7 +209,7 @@ export default function Home() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Box marginTop={{xs: 7, sm: 12}}>
+      <Box marginTop={{xs: 7, sm: 12}} marginBottom={{xs: 6, sm: 0}}>
         <Grid container>
           <FixedNavBar
             onAccountClick={() => setDrawerOpen(true)}
@@ -157,6 +262,84 @@ export default function Home() {
         )}
 
         <ImageCarousel />
+        {/* Carrusel de favoritos del usuario autenticado */}
+        {favoritos.length > 0 && (
+          <>
+            <Box>
+              <Typography variant="h5" sx={{ marginX: { xs: 1, sm: 5 } }}>
+                Tus favoritos
+              </Typography>
+            </Box>
+            <Box
+              sx={{
+                display: 'flex',
+                overflowX: 'auto',
+                paddingY: 2,
+                marginX: { xs: 1, sm: 5 },
+                gap: 2,
+                '&::-webkit-scrollbar': { height: 8 },
+                '&::-webkit-scrollbar-thumb': {
+                  backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)',
+                  borderRadius: 4,
+                },
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
+              }}
+            >
+              {favoritos.map((alimento) => (
+                <Box key={alimento.nombre} sx={{ flex: '0 0 auto' }}>
+                  <DishCard
+                    id={alimento.id_alimento}
+                    nombrePlatillo={alimento.nombre}
+                    precio={alimento.precio}
+                    calorias={alimento.calorias}
+                    imagen={alimento.imagen}
+                    rating={favoritosRatings[alimento.id_alimento]}
+                  />
+                </Box>
+              ))}
+            </Box>
+          </>
+        )}
+        {/* Carrusel de mejor calificados */}
+        {mejorCalificados.length > 0 && (
+          <>
+            <Box>
+              <Typography variant="h5" sx={{ marginX: { xs: 1, sm: 5 } }}>
+                Mejor calificados
+              </Typography>
+            </Box>
+            <Box
+              sx={{
+                display: 'flex',
+                overflowX: 'auto',
+                paddingY: 2,
+                marginX: { xs: 1, sm: 5 },
+                gap: 2,
+                '&::-webkit-scrollbar': { height: 8 },
+                '&::-webkit-scrollbar-thumb': {
+                  backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)',
+                  borderRadius: 4,
+                },
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
+              }}
+            >
+              {mejorCalificados.map((alimento) => (
+                <Box key={alimento.nombre} sx={{ flex: '0 0 auto' }}>
+                  <DishCard
+                    id={alimento.id_alimento}
+                    nombrePlatillo={alimento.nombre}
+                    precio={alimento.precio}
+                    calorias={alimento.calorias}
+                    imagen={alimento.imagen}
+                    rating={mejorCalificadosRatings[alimento.id_alimento]}
+                  />
+                </Box>
+              ))}
+            </Box>
+          </>
+        )}
         <Box>
           <Typography variant="h5" sx={{ marginX: { xs: 1, sm: 5 } }}>
             Los favoritos
@@ -186,6 +369,7 @@ export default function Home() {
                 precio={alimento.precio}
                 calorias={alimento.calorias}
                 imagen={alimento.imagen}
+                rating={alimentosRatings[alimento.id_alimento]}
               />
             </Box>
           ))}

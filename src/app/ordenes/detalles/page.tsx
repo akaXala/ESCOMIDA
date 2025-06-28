@@ -22,6 +22,8 @@ import DoneAllIcon from '@mui/icons-material/DoneAll';
 
 // Tema personalizado
 import { getCustomTheme } from '@/components/MUI/CustomTheme';
+import { mostrarAlerta } from '@/components/SweetAlert/modalAlerts';
+import { mostrarConfirmacion } from '@/components/SweetAlert/confirmAlert';
 
 // Icono según estatus
 function getStatusIcon(estatus: string, color: string) {
@@ -100,6 +102,36 @@ export default function Home() {
       };
       fetchOrder();
     }, []);
+
+    const deleteOrder = async () => {
+      const confirmed = await mostrarConfirmacion(
+        '¿Seguro que deseas cancelar el pedido?',
+        'Esta acción no se puede deshacer.',
+        'Sí, cancelar',
+        'No',
+        'warning',
+        themeMode
+      );
+
+      if (!confirmed) return;
+      
+      try {
+        const res = await fetch ('/api/ordenes/cancelar', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({id_pedido: orderDetails.id_pedido})
+        });
+        const data = await res.json();
+        if (data.success) {
+          await mostrarAlerta('Pedido cancelado', 'Tu pedido ha sido cancelado exitosamente.', 'OK', 'success', themeMode);
+          router.replace('/ordenes');
+        } else {
+          await mostrarAlerta('Error', 'No se pudo cancelar el pedido.', 'OK', 'error', themeMode);
+        }
+      } catch (error) {
+        await mostrarAlerta('Error', 'Ocurrió un error al cancelar el pedido.', 'OK', 'error', themeMode);
+      }
+    }
 
     // Evita renderizar hasta que esté montado en cliente
     if (!mounted) return null;
@@ -226,7 +258,7 @@ export default function Home() {
                           marginBottom: '8px',
                           transition: 'background 0.2s',
                         }}
-                        onClick={() => alert('¿Seguro que deseas cancelar el pedido?')}
+                        onClick={deleteOrder}
                       >
                         Cancelar pedido
                       </button>

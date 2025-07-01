@@ -76,6 +76,16 @@ export default function Home() {
         borderRadius: '20px', // Bordes redondeados
         minWidth: '250px', // Ancho mínimo para consistencia
     };
+    const dashboardStats = {
+        pendingOrdersCount: 5,
+        newNotifications: 2,
+        todayPrepared: 15,
+        recentActivity: [
+            { id: 1, text: 'Orden #1234 completada', time: 'Hace 5 minutos' },
+            { id: 2, text: 'Nuevo pedido: Pizza Pepperoni', time: 'Hace 15 minutos' },
+            { id: 3, text: 'Inventario de tomate bajo', time: 'Hace 30 minutos' },
+        ],
+    };
 
     if (!mounted) return null;
 

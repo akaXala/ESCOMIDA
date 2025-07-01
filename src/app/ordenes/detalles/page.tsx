@@ -13,6 +13,8 @@ import FixedNavBar from '@/components/FixedNavBar';
 import RightDrawer from '@/components/RightDrawer';
 import { useSearch } from '@/context/SearchContext';
 import { useOrderDetails } from '@/context/OrderDetailsContext';
+import RateModal from '@/components/RateModal';
+import Loading from '@/components/Loading';
 
 // Iconos
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
@@ -22,6 +24,8 @@ import DoneAllIcon from '@mui/icons-material/DoneAll';
 
 // Tema personalizado
 import { getCustomTheme } from '@/components/MUI/CustomTheme';
+import { mostrarAlerta } from '@/components/SweetAlert/modalAlerts';
+import { mostrarConfirmacion } from '@/components/SweetAlert/confirmAlert';
 
 // Icono según estatus
 function getStatusIcon(estatus: string, color: string) {
@@ -75,35 +79,95 @@ export default function Home() {
     const { orderDetails } = useOrderDetails();
     const [items, setItems] = React.useState<any[]>([]);
     const [loading, setLoading] = React.useState(true);
+    const [rateOpen, setRateOpen] = React.useState(false);
+    const [rateLoading, setRateLoading] = React.useState(false);
 
     React.useEffect(() => {
       const fetchOrder = async () => {
         try {
-          if (!orderDetails) router.replace('/ordenes');
+          if (!orderDetails) { router.replace('/ordenes'); return; }
           setLoading(true);
-          console.log("Consulta")
-
           const res = await fetch('/api/ordenes/mostrar-detalles', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({id_pedido: orderDetails.id_pedido})
           });
-
           const data = await res.json();
-
           if(data.success) {
             setItems(data.data)
           }
-          setLoading(false);
         } catch (error) {
           console.log("Error");
+        } finally {
+          setLoading(false);
         }
       };
       fetchOrder();
-    }, []);
+    }, [orderDetails]);
+
+    const deleteOrder = async () => {
+      const confirmed = await mostrarConfirmacion(
+        '¿Seguro que deseas cancelar el pedido?',
+        'Esta acción no se puede deshacer.',
+        'Sí, cancelar',
+        'No',
+        'warning',
+        themeMode
+      );
+
+      if (!confirmed) return;
+
+      try {
+        const res = await fetch ('/api/ordenes/cancelar', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({id_pedido: orderDetails.id_pedido})
+        });
+        const data = await res.json();
+        if (data.success) {
+          await mostrarAlerta('Pedido cancelado', 'Tu pedido ha sido cancelado exitosamente.', 'OK', 'success', themeMode);
+          router.replace('/ordenes');
+        } else {
+          await mostrarAlerta('Error', 'No se pudo cancelar el pedido.', 'OK', 'error', themeMode);
+        }
+      } catch (error) {
+        await mostrarAlerta('Error', 'Ocurrió un error al cancelar el pedido.', 'OK', 'error', themeMode);
+      }
+    }
+
+    // Prepara los alimentos para el modal
+    const alimentosToRate = items.map(item => ({
+      id_alimento: item.id_original, // Usar id_original como id_alimento
+      nombre: item.nombre,
+      imagen: item.imagen || '/404.webp',
+    }));
+
+    // Función para enviar las calificaciones
+    const handleRateSubmit = async (results: { id_alimento: number; puntuacion: number; comentario: string }[]) => {
+      console.log('Enviando calificaciones a la API:', results); // <-- Log para depuración
+      setRateLoading(true);
+      try {
+        const res = await fetch('/api/ordenes/calificar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(results),
+        });
+        const data = await res.json();
+        if (data.success) {
+          await mostrarAlerta('¡Gracias!', 'Tus calificaciones han sido registradas.', 'OK', 'success', themeMode);
+          setRateOpen(false);
+        } else {
+          await mostrarAlerta('Error', 'No se pudieron guardar las calificaciones.', 'OK', 'error', themeMode);
+        }
+      } catch (error) {
+        await mostrarAlerta('Error', 'Ocurrió un error al calificar.', 'OK', 'error', themeMode);
+      }
+      setRateLoading(false);
+    };
 
     // Evita renderizar hasta que esté montado en cliente
     if (!mounted) return null;
+    if (loading) return <Loading />;
     if (!orderDetails) return <Typography>No hay detalles de la orden.</Typography>;
 
     return(
@@ -114,7 +178,7 @@ export default function Home() {
                     <FixedNavBar
                         onAccountClick={() => setDrawerOpen(true)}
                         onSearchClick={openSearch}
-                        currentTab={undefined}
+                        currentTab="orders"
                     />
                     <RightDrawer open={drawerOpen} setOpen={setDrawerOpen} />
                 </Grid>
@@ -146,7 +210,7 @@ export default function Home() {
                     <Typography variant='h5'>Tu orden</Typography>
                   </Grid>
                   <Grid size={12}>
-                    <Typography variant='overline'>N items</Typography>
+                    <Typography variant='overline'>{orderDetails.cantidad} items</Typography>
                   </Grid>
                 </Grid>
                 {/* Ejemplo de platillo estilo imagen */}
@@ -162,11 +226,7 @@ export default function Home() {
                   alignItems="flex-start"
                   spacing={2}
                 >
-                  {loading ? (
-                    <Grid size={12}>
-                      <Typography>Cargando...</Typography>
-                    </Grid>
-                  ) : items.length === 0 ? (
+                  {items.length === 0 ? (
                     <Grid size={12}>
                       <Typography>No hay nada que mostrar.</Typography>
                     </Grid>
@@ -189,20 +249,94 @@ export default function Home() {
                     ))
                   )}
                 </Grid>
-                <Grid
-                  container
-                  sx={{ marginX: { xs: 2, sm: 5 }}}
-                >
+                <Grid container marginBottom={{xs: 2, sm: 3}} sx={{ marginX: { xs: 2, sm: 5 }}}>
                   <Grid size={12}>
                     <Typography variant='h5'>Resumen de pago</Typography>
                   </Grid>
                   <Grid size={12} marginTop={2}>
                     <Typography variant='h6'>Total: ${orderDetails.precio_total}</Typography>
                   </Grid>
-                  <Grid size={12} marginBottom={{ xs: 8.5, sm: 3}}>
+                  <Grid size={12} marginBottom={{ xs: 1, sm: 3}}>
                     <Typography variant='body2'>Forma de pago: </Typography>
                   </Grid>
                 </Grid>
+                {/* Botón Cancelar Pedido solo si el estatus es 'En espera' */}
+                {orderDetails.estatus === 'En espera' && (
+                  <Grid
+                    container
+                    sx={{
+                      marginX: { xs: 2, sm: 5 },
+                      mb: { xs: 8, sm: 4 },
+                      mt: { xs: 0, sm: 0 },
+                    }}
+                    justifyContent="center"
+                  >
+                    <Grid size={12}>
+                      <button
+                        style={{
+                          width: '100%',
+                          padding: '8px',
+                          backgroundColor: '#d32f2f',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: '8px',
+                          fontSize: '1.1rem',
+                          fontWeight: 'bold',
+                          cursor: 'pointer',
+                          marginTop: '0',
+                          marginBottom: '8px',
+                          transition: 'background 0.2s',
+                        }}
+                        onClick={deleteOrder}
+                      >
+                        Cancelar pedido
+                      </button>
+                    </Grid>
+                  </Grid>
+                )}
+
+                {/* Botón Calificar Alimentos solo si el estatus es 'Entregado' */}
+                {orderDetails.estatus === 'Entregado' && (
+                  <Grid
+                    container
+                    sx={{
+                      marginX: { xs: 2, sm: 5 },
+                      mb: { xs: 8, sm: 4 },
+                      mt: { xs: 0, sm: 0 },
+                    }}
+                    justifyContent="center"
+                  >
+                    <Grid size={12}>
+                      <button
+                        style={{
+                          width: '100%',
+                          padding: '8px',
+                          backgroundColor: '#d0b006',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: '8px',
+                          fontSize: '1.1rem',
+                          fontWeight: 'bold',
+                          cursor: 'pointer',
+                          marginTop: '0',
+                          marginBottom: '8px',
+                          transition: 'background 0.2s',
+                        }}
+                        onClick={() => setRateOpen(true)}
+                        disabled={rateLoading}
+                      >
+                        Calificar alimentos
+                      </button>
+                    </Grid>
+                  </Grid>
+                )}
+                {/* Modal para calificar alimentos */}
+                <RateModal
+                  alimentos={alimentosToRate}
+                  isOpen={rateOpen}
+                  onClose={() => setRateOpen(false)}
+                  onSubmit={handleRateSubmit}
+                />
             </Box>
         </ThemeProvider>
     );

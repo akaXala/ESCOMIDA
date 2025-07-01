@@ -14,6 +14,7 @@ import { useSearchParams } from 'next/navigation';
 import FixedNavBar from '@/components/FixedNavBar';
 import RightDrawer from '@/components/RightDrawer';
 import DishCard from '@/components/DishCard';
+import Loading from '@/components/Loading';
 
 // Importa el tema custom
 import { getCustomTheme } from '@/components/MUI/CustomTheme';
@@ -42,29 +43,46 @@ export default function Home() {
   // Estados para los alimentos
   const [alimentos, setAlimentos] = React.useState<{ id_alimento: number; nombre: string; precio: number; calorias: number, imagen: string }[]>([]);
 
-  React.useEffect(() => {
-      const fetchAlimentos = async () => {
-        try {
-          if (!tipo) return;
-          const res = await fetch('/api/alimentos/filtrar',{
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ categoria: tipo })
-          });
+  // Estado para los promedios de los alimentos filtrados
+  const [alimentosRatings, setAlimentosRatings] = React.useState<{ [id: number]: number }>({});
 
-          const data = await res.json();
-  
-          if (data.success) { 
-            setAlimentos(data.data);
+  // Estado de carga
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const fetchAll = async () => {
+      try {
+        if (!tipo) return;
+        const res = await fetch('/api/alimentos/filtrar',{
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ categoria: tipo })
+        });
+        const data = await res.json();
+        if (data.success) {
+          setAlimentos(data.data);
+          if (data.data.length > 0) {
+            const ids = data.data.map((a: any) => a.id_alimento);
+            const res2 = await fetch('/api/alimentos/calificacion', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ ids })
+            });
+            const data2 = await res2.json();
+            if (data2.success && data2.ratings) setAlimentosRatings(data2.ratings);
           }
-        } catch (error) {
-          console.error("Error al cargar los alimentos: " + error);
         }
-      };
-      fetchAlimentos();
-    }, []);
+      } catch (error) {
+        console.error("Error al cargar los alimentos: " + error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAll();
+  }, [tipo]);
 
   if (!mounted) return null;
+  if (loading) return <Loading />;
 
   return (
     <ThemeProvider theme={theme}>
@@ -80,16 +98,17 @@ export default function Home() {
         <Typography variant="h4" component="h1" sx={{ p: { xs: 2, sm: 3 }, marginX: { sm: 2} }}>
           {tipoU}
         </Typography>
-        <Grid container sx={{ marginX: { xs: 2, sm: 5 } }}>
+        <Grid container sx={{ maxWidth: '1200px', mx: 'auto', px: { xs: 2, sm: 0 }, justifyContent: 'center' }}>
           {alimentos.map((alimento) => (
-            <Grid size={4} key={alimento.nombre}>
+            <Grid size={{xs: 12, md: 4}} key={alimento.nombre} sx={{ marginY: { xs: 1, sm: 3} }}>
               <DishCard
                 id={alimento.id_alimento}
                 nombrePlatillo={alimento.nombre}
                 precio={alimento.precio}
                 calorias={alimento.calorias}
                 imagen={alimento.imagen}
-                />
+                rating={alimentosRatings[alimento.id_alimento]}
+              />
             </Grid>
           ))}
         </Grid>

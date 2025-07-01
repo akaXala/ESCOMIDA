@@ -21,6 +21,8 @@ import DishCard from '@/components/DishCard';
 // Tema personalizado
 import { getCustomTheme } from '@/components/MUI/CustomTheme';
 
+import Loading from '@/components/Loading'
+
 // Colección de información
 const TipoAlimento = [
   { nombre: "Desayunos", imagen: "/icons/Desayuno.webp", link: "/filtrar?tipo=Desayuno" },
@@ -58,27 +60,88 @@ export default function Home() {
   const [alimentos, setAlimentos] = React.useState<{ id_alimento: number; nombre: string; precio: number; calorias: number; imagen: string }[]>([]);
   const alimentosFetched = React.useRef(false);
 
+  // Estado para los favoritos del usuario
+  const [favoritos, setFavoritos] = React.useState<{ id_alimento: number; nombre: string; precio: number; calorias: number; imagen: string }[]>([]);
+
+  // Estado para los mejor calificados
+  const [mejorCalificados, setMejorCalificados] = React.useState<{ id_alimento: number; nombre: string; precio: number; calorias: number; imagen: string; promedio: number; total_resenas: number }[]>([]);
+
+  // Estado para los promedios de favoritos
+  const [favoritosRatings, setFavoritosRatings] = React.useState<{ [id: number]: number }>({});
+
+  // Estado para los promedios de mejor calificados
+  const [mejorCalificadosRatings, setMejorCalificadosRatings] = React.useState<{ [id: number]: number }>({});
+
+  // Estado para los promedios de todos los alimentos
+  const [alimentosRatings, setAlimentosRatings] = React.useState<{ [id: number]: number }>({});
+
+  // Estado de carga
+  const [loading, setLoading] = React.useState(true);
+
   // Navegación
   const router = useRouter();
 
   React.useEffect(() => {
-    // Solo consulta si no se ha hecho antes
-    if (alimentosFetched.current) return;
-    alimentosFetched.current = true;
-    const fetchAlimentos = async () => {
+    if (!mounted) return;
+    setLoading(true);
+    const fetchAll = async () => {
       try {
-        const res = await fetch('/api/alimentos');
-        const data = await res.json();
+        // 1. Mejor calificados
+        const mejorRes = await fetch('/api/alimentos/mejor-calificados');
+        const mejorData = await mejorRes.json();
+        if (mejorData.success) setMejorCalificados(mejorData.data);
 
-        if (data.success) { 
-          setAlimentos(data.data);
+        // 2. Favoritos
+        const favRes = await fetch('/api/alimentos/favoritos');
+        const favData = await favRes.json();
+        if (favData.success) setFavoritos(favData.data);
+
+        // 3. Alimentos
+        const aliRes = await fetch('/api/alimentos');
+        const aliData = await aliRes.json();
+        if (aliData.success) setAlimentos(aliData.data);
+
+        // 4. Ratings favoritos
+        if (favData.success && favData.data.length > 0) {
+          const ids = favData.data.map((a: any) => a.id_alimento);
+          const res = await fetch('/api/alimentos/calificacion', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ids })
+          });
+          const data = await res.json();
+          if (data.success && data.ratings) setFavoritosRatings(data.ratings);
         }
-      } catch (error) {
-        console.error("Error al cargar los alimentos: " + error);
+        // 5. Ratings mejor calificados
+        if (mejorData.success && mejorData.data.length > 0) {
+          const ids = mejorData.data.map((a: any) => a.id_alimento);
+          const res = await fetch('/api/alimentos/calificacion', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ids })
+          });
+          const data = await res.json();
+          if (data.success && data.ratings) setMejorCalificadosRatings(data.ratings);
+        }
+        // 6. Ratings alimentos
+        if (aliData.success && aliData.data.length > 0) {
+          const ids = aliData.data.map((a: any) => a.id_alimento);
+          const res = await fetch('/api/alimentos/calificacion', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ids })
+          });
+          const data = await res.json();
+          if (data.success && data.ratings) setAlimentosRatings(data.ratings);
+        }
+      } catch (e) {
+        // Manejo de error opcional
+      } finally {
+        setLoading(false);
       }
     };
-    fetchAlimentos();
-  }, []);
+    fetchAll();
+  }, [mounted]);
 
   // Componente que renderiza cada una de las opciones
   interface TipoAlimentoItem {
@@ -100,11 +163,12 @@ export default function Home() {
   );
 
   if (!mounted) return null;
+  if (loading) return <Loading />;
 
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Box marginTop={{xs: 7, sm: 12}}>
+      <Box marginTop={{xs: 7, sm: 12}} marginBottom={{xs: 6, sm: 0}}>
         <Grid container>
           <FixedNavBar
             onAccountClick={() => setDrawerOpen(true)}
@@ -157,6 +221,84 @@ export default function Home() {
         )}
 
         <ImageCarousel />
+        {/* Carrusel de favoritos del usuario autenticado */}
+        {favoritos.length > 0 && (
+          <>
+            <Box>
+              <Typography variant="h5" sx={{ marginX: { xs: 1, sm: 5 } }}>
+                Tus favoritos
+              </Typography>
+            </Box>
+            <Box
+              sx={{
+                display: 'flex',
+                overflowX: 'auto',
+                paddingY: 2,
+                marginX: { xs: 1, sm: 5 },
+                gap: 2,
+                '&::-webkit-scrollbar': { height: 8 },
+                '&::-webkit-scrollbar-thumb': {
+                  backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)',
+                  borderRadius: 4,
+                },
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
+              }}
+            >
+              {favoritos.map((alimento) => (
+                <Box key={alimento.nombre} sx={{ flex: '0 0 auto' }}>
+                  <DishCard
+                    id={alimento.id_alimento}
+                    nombrePlatillo={alimento.nombre}
+                    precio={alimento.precio}
+                    calorias={alimento.calorias}
+                    imagen={alimento.imagen}
+                    rating={favoritosRatings[alimento.id_alimento]}
+                  />
+                </Box>
+              ))}
+            </Box>
+          </>
+        )}
+        {/* Carrusel de mejor calificados */}
+        {mejorCalificados.length > 0 && (
+          <>
+            <Box>
+              <Typography variant="h5" sx={{ marginX: { xs: 1, sm: 5 } }}>
+                Mejor calificados
+              </Typography>
+            </Box>
+            <Box
+              sx={{
+                display: 'flex',
+                overflowX: 'auto',
+                paddingY: 2,
+                marginX: { xs: 1, sm: 5 },
+                gap: 2,
+                '&::-webkit-scrollbar': { height: 8 },
+                '&::-webkit-scrollbar-thumb': {
+                  backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)',
+                  borderRadius: 4,
+                },
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
+              }}
+            >
+              {mejorCalificados.map((alimento) => (
+                <Box key={alimento.nombre} sx={{ flex: '0 0 auto' }}>
+                  <DishCard
+                    id={alimento.id_alimento}
+                    nombrePlatillo={alimento.nombre}
+                    precio={alimento.precio}
+                    calorias={alimento.calorias}
+                    imagen={alimento.imagen}
+                    rating={mejorCalificadosRatings[alimento.id_alimento]}
+                  />
+                </Box>
+              ))}
+            </Box>
+          </>
+        )}
         <Box>
           <Typography variant="h5" sx={{ marginX: { xs: 1, sm: 5 } }}>
             Los favoritos
@@ -186,6 +328,7 @@ export default function Home() {
                 precio={alimento.precio}
                 calorias={alimento.calorias}
                 imagen={alimento.imagen}
+                rating={alimentosRatings[alimento.id_alimento]}
               />
             </Box>
           ))}

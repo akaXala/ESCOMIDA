@@ -13,6 +13,7 @@ import CartItem from '@/components/CartItem';
 import FixedNavBar from '@/components/FixedNavBar';
 import RightDrawer from '@/components/RightDrawer';
 import { useSearch } from '@/context/SearchContext';
+import Loading from '@/components/Loading';
 
 // Tema personalizado
 import { getCustomTheme } from '@/components/MUI/CustomTheme';
@@ -89,6 +90,7 @@ export default function Home () {
 
     // Evita renderizar hasta que esté montado en cliente
     if (!mounted) return null;
+    if (loading) return <Loading />;
 
     return(
         <ThemeProvider theme={theme}>
@@ -101,9 +103,7 @@ export default function Home () {
                 />
                 <RightDrawer open={drawerOpen} setOpen={setDrawerOpen} />
                 <Typography variant="h4" sx={{ mb: 3, mt: 2 }}>Tu Carrito</Typography>
-                {loading ? (
-                    <Typography>Cargando...</Typography>
-                ) : items.length === 0 ? (
+                {items.length === 0 ? (
                     <Typography>No hay productos en el carrito.</Typography>
                 ) : (
                     items.map((item) => (

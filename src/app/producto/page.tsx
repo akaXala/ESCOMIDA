@@ -39,6 +39,7 @@ import { useSearchParams } from 'next/navigation';
 // Importa el tema custom
 import { getCustomTheme } from '@/components/MUI/CustomTheme';
 import { useAuth } from "@clerk/nextjs"; 
+import Loading from '@/components/Loading';
 
 interface Ingredient {
   id: string;
@@ -66,7 +67,7 @@ export default function Home() {
   const [optionalIngredients, setOptionalIngredients] = React.useState<Ingredient[]>([]);
 
   const [alimento, setAlimento] = React.useState<any>(null);
-  const [loading, setLoading] = React.useState(false);
+  const [loading, setLoading] = React.useState(true);
 
   const [salsas, setSalsas] = React.useState<string[]>([]);
   const [selectedSalsa, setSelectedSalsa] = React.useState<string>('');
@@ -82,13 +83,15 @@ export default function Home() {
   React.useEffect(() => {
     if (!id_alimento) return;
     setLoading(true);
-    fetch('/api/alimentos/mostrar', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id_alimento }),
-    })
-      .then(res => res.json())
-      .then(data => {
+    const fetchAll = async () => {
+      try {
+        // 1. Datos del alimento
+        const res = await fetch('/api/alimentos/mostrar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id_alimento }),
+        });
+        const data = await res.json();
         if (data.success && data.data.length > 0) {
           setAlimento(data.data[0]);
           if (data.data[0].ingredientes_obligatorios) {
@@ -127,22 +130,19 @@ export default function Home() {
             setSelectedExtra('');
           }
         }
-      })
-      .finally(() => setLoading(false));
-  }, [id_alimento]);
-
-  // Verifica si el alimento es favorito al cargar
-  React.useEffect(() => {
-    if (!id_alimento) return;
-    fetch('/api/favoritos/check', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id_alimento }),
-    })
-      .then(res => res.json())
-      .then(data => {
-        setIsFavorite(data.isFavorite === true);
-      });
+        // 2. Estado de favorito
+        const favRes = await fetch('/api/favoritos/check', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id_alimento }),
+        });
+        const favData = await favRes.json();
+        setIsFavorite(favData.isFavorite === true);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAll();
   }, [id_alimento]);
 
   const handleOptionalChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -229,6 +229,7 @@ export default function Home() {
   };
 
   if (!mounted) return null;
+  if (loading) return <Loading />;
 
   return (
     <ThemeProvider theme={theme}>

@@ -175,3 +175,317 @@ INSERT INTO Alimento (categoria, nombre, ingredientes_obligatorios, salsa, extra
 ('Bebida Fría', 'Malteada de Fresa', 'Leche, Helado, Jarabe', NULL, NULL, NULL, 'Deliciosa y espesa malteada preparada con helado de fresa', 400, 40, '/alimentos/malteada(fresa).webp'),
 ('Bebida Fría', 'Malteada de Chocolate', 'Leche, Helado, Jarabe', NULL, NULL, NULL, 'Deliciosa y espesa malteada preparada con helado de chocolate', 400, 40, '/alimentos/malteada(chocolate).webp'),
 ('Bebida Fría', 'Malteada de Vainilla', 'Leche, Helado, Jarabe', NULL, NULL, NULL, 'Deliciosa y espesa malteada preparada con helado de vainilla.', 400, 40, '/alimentos/malteada(vainilla).webp');
+
+-- APARTADO INSERT RESEÑAS --
+-- --- Apartado para insertar los usuarios especificados ---
+INSERT INTO Usuario (id, telefono) VALUES
+('user_2y3bKkxJEdRTQuytY9R8G1BgWit', NULL),
+('user_2z4LxQRowTEqr44EJdSxOfvrmK8', NULL),
+('user_2z4MIn36KUNfGuU5vBxriPlsOup', NULL);
+
+-- --- Modificación de la tabla Reseña para permitir comentarios nulos ---
+-- El comando original en tu esquema especifica que 'comentario' NO puede ser nulo.
+-- Para cumplir con la solicitud de dejarlo en NULL, se debe alterar la tabla primero.
+ALTER TABLE reseña ALTER COLUMN comentario DROP NOT NULL;
+
+-- --- Apartado para insertar reseñas ---
+-- Se generan 3 reseñas para cada producto, una por cada usuario especificado.
+INSERT INTO reseña (puntuacion, comentario, id_alimento, id) VALUES
+-- Huevo a la Mexicana (id: 1)
+(5, NULL, 1, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(4, NULL, 1, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(5, NULL, 1, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Huevos Rancheros (id: 2)
+(3, NULL, 2, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(5, NULL, 2, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(4, NULL, 2, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Huevo con Salchicha (id: 3)
+(2, NULL, 3, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(4, NULL, 3, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(3, NULL, 3, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Huevos Estrellados con Tocino (id: 4)
+(5, NULL, 4, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(5, NULL, 4, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(4, NULL, 4, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Huevos Revueltos con Jamón (id: 5)
+(4, NULL, 5, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(3, NULL, 5, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(4, NULL, 5, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Omelette de Jamón con Queso (id: 6)
+(5, NULL, 6, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(5, NULL, 6, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(5, NULL, 6, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Omelette de Setas (id: 7)
+(4, NULL, 7, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(3, NULL, 7, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(4, NULL, 7, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Omelette de Champiñones (id: 8)
+(5, NULL, 8, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(4, NULL, 8, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(5, NULL, 8, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Omelette de Jamón con Queso y Champiñones (id: 9)
+(5, NULL, 9, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(5, NULL, 9, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(5, NULL, 9, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Huevo con Chorizo (id: 10)
+(4, NULL, 10, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(5, NULL, 10, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(5, NULL, 10, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Torta de Salchicha (id: 11)
+(2, NULL, 11, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(1, NULL, 11, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(3, NULL, 11, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Torta de Jamón con Queso (id: 12)
+(4, NULL, 12, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(3, NULL, 12, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(4, NULL, 12, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Torta de Pierna (id: 13)
+(5, NULL, 13, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(4, NULL, 13, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(5, NULL, 13, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Torta de Milanesa de Res (id: 14)
+(5, NULL, 14, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(4, NULL, 14, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(5, NULL, 14, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Torta de Milanesa de Pollo (id: 15)
+(5, NULL, 15, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(4, NULL, 15, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(5, NULL, 15, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Torta de Huevo (id: 16)
+(3, NULL, 16, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(2, NULL, 16, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(4, NULL, 16, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Torta de Al Pastor (id: 17)
+(5, NULL, 17, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(4, NULL, 17, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(5, NULL, 17, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Torta Cubana (id: 18)
+(5, NULL, 18, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(5, NULL, 18, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(5, NULL, 18, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Torta Especial (id: 19)
+(4, NULL, 19, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(5, NULL, 19, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(4, NULL, 19, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Sincronizada (id: 20)
+(3, NULL, 20, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(4, NULL, 20, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(4, NULL, 20, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Club Sandwich (id: 21)
+(5, NULL, 21, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(4, NULL, 21, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(5, NULL, 21, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Mollete Sencillos (id: 22)
+(3, NULL, 22, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(4, NULL, 22, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(4, NULL, 22, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Mollete de Jamón (id: 23)
+(4, NULL, 23, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(3, NULL, 23, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(4, NULL, 23, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Mollete de Chorizo (id: 24)
+(5, NULL, 24, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(4, NULL, 24, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(5, NULL, 24, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Mollete de Tocino (id: 25)
+(5, NULL, 25, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(4, NULL, 25, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(5, NULL, 25, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Mollete de Especial con Papas (id: 26)
+(5, NULL, 26, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(4, NULL, 26, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(5, NULL, 26, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Chilaquiles Solos (id: 27)
+(4, NULL, 27, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(3, NULL, 27, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(4, NULL, 27, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Chilaquiles de Con Pollo (id: 28)
+(5, NULL, 28, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(4, NULL, 28, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(5, NULL, 28, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Chilaquiles de Con Huevo Estrellado (id: 29)
+(5, NULL, 29, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(4, NULL, 29, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(5, NULL, 29, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Chilaquiles de Con Bistec (id: 30)
+(5, NULL, 30, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(4, NULL, 30, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(5, NULL, 30, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Chilaquiles de Con Chorizo (id: 31)
+(5, NULL, 31, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(4, NULL, 31, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(5, NULL, 31, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Chilaquiles de Especiales (id: 32)
+(5, NULL, 32, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(5, NULL, 32, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(5, NULL, 32, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Taco de Bistec (id: 33)
+(4, NULL, 33, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(5, NULL, 33, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(4, NULL, 33, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Taco de Chuleta (id: 34)
+(3, NULL, 34, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(4, NULL, 34, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(4, NULL, 34, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Taco de Chorizo (id: 35)
+(5, NULL, 35, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(4, NULL, 35, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(5, NULL, 35, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Taco de Pastor (id: 36)
+(5, NULL, 36, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(4, NULL, 36, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(5, NULL, 36, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Taco Campechano (id: 37)
+(5, NULL, 37, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(4, NULL, 37, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(5, NULL, 37, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Taco de Alambre con Tortilla de Maíz (id: 38)
+(5, NULL, 38, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(4, NULL, 38, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(5, NULL, 38, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Taco de Alambre con Tortilla de Harina (id: 39)
+(5, NULL, 39, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(4, NULL, 39, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(5, NULL, 39, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Quesadilla Sencilla con Tortilla de Maíz (id: 40)
+(3, NULL, 40, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(4, NULL, 40, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(4, NULL, 40, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Quesadilla Sencilla con Tortilla de Harina (id: 41)
+(3, NULL, 41, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(4, NULL, 41, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(4, NULL, 41, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Quesadilla con Chorizo con Tortilla de Maíz (id: 42)
+(5, NULL, 42, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(4, NULL, 42, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(5, NULL, 42, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Quesadilla con Chorizo con Tortilla de Harina (id: 43)
+(5, NULL, 43, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(4, NULL, 43, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(5, NULL, 43, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Quesadilla con Champiñones con Tortilla de Maíz (id: 44)
+(4, NULL, 44, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(3, NULL, 44, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(4, NULL, 44, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Quesadilla con Champiñones con Tortilla de Harina (id: 45)
+(4, NULL, 45, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(3, NULL, 45, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(4, NULL, 45, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Quesadilla con Rajas con Tortilla de Maíz (id: 46)
+(5, NULL, 46, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(4, NULL, 46, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(4, NULL, 46, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Quesadilla con Rajas con Tortilla de Harina (id: 47)
+(5, NULL, 47, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(4, NULL, 47, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(4, NULL, 47, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Gringa (id: 48)
+(5, NULL, 48, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(5, NULL, 48, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(5, NULL, 48, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Pay de Limón (id: 49)
+(5, NULL, 49, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(4, NULL, 49, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(5, NULL, 49, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Muffin de Chocolate (id: 50)
+(5, NULL, 50, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(4, NULL, 50, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(5, NULL, 50, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Gelatina con Crema (id: 51)
+(3, NULL, 51, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(4, NULL, 51, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(4, NULL, 51, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Gelatina (id: 52)
+(2, NULL, 52, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(3, NULL, 52, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(3, NULL, 52, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Pastel de Elote (id: 53)
+(5, NULL, 53, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(4, NULL, 53, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(5, NULL, 53, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Café de Olla (id: 54)
+(5, NULL, 54, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(4, NULL, 54, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(5, NULL, 54, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Café de Nescafé (id: 55)
+(2, NULL, 55, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(3, NULL, 55, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(3, NULL, 55, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Café de Máquina Americano (id: 56)
+(4, NULL, 56, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(5, NULL, 56, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(4, NULL, 56, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Café de Máquina Espresso (id: 57)
+(5, NULL, 57, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(4, NULL, 57, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(5, NULL, 57, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Café de Máquina (Cappuccino) (id: 58)
+(5, NULL, 58, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(4, NULL, 58, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(5, NULL, 58, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Café de Máquina (Late) (id: 59)
+(5, NULL, 59, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(4, NULL, 59, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(4, NULL, 59, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Té Manzanilla (id: 60)
+(5, NULL, 60, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(4, NULL, 60, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(4, NULL, 60, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Té Limón (id: 61)
+(4, NULL, 61, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(3, NULL, 61, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(4, NULL, 61, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Té Hierbabuena (id: 62)
+(5, NULL, 62, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(4, NULL, 62, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(4, NULL, 62, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Leche con Chocolate (id: 63)
+(4, NULL, 63, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(3, NULL, 63, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(5, NULL, 63, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Agua del Día (Medio Litro) (id: 64)
+(5, NULL, 64, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(4, NULL, 64, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(5, NULL, 64, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Agua del Día (Litro) (id: 65)
+(5, NULL, 65, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(4, NULL, 65, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(5, NULL, 65, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Jugo de Naranja (id: 66)
+(5, NULL, 66, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(5, NULL, 66, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(5, NULL, 66, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Jugo Verde (id: 67)
+(5, NULL, 67, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(4, NULL, 67, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(5, NULL, 67, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Licuado de Fresa (id: 68)
+(4, NULL, 68, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(3, NULL, 68, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(4, NULL, 68, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Licuado de Plátano (id: 69)
+(4, NULL, 69, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(4, NULL, 69, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(4, NULL, 69, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Licuado de Chocolate (id: 70)
+(5, NULL, 70, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(4, NULL, 70, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(5, NULL, 70, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Chocomilk (id: 71)
+(4, NULL, 71, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(3, NULL, 71, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(4, NULL, 71, 'user_2z4MIn36KUNfGuU5vBxriPlsOup'),
+-- Refresco (id: 72)
+(5, NULL, 72, 'user_2y3bKkxJEdRTQuytY9R8G1BgWit'),
+(5, NULL, 72, 'user_2z4LxQRowTEqr44EJdSxOfvrmK8'),
+(5, NULL, 72, 'user_2z4MIn36KUNfGuU5vBxriPlsOup');
+
+-- APARTADO VISTAS --
+CREATE VIEW promedio_puntuacion AS
+SELECT
+  id_alimento,
+  AVG(puntuacion) AS promedio_puntuacion
+FROM
+  reseña
+GROUP BY
+  id_alimento;

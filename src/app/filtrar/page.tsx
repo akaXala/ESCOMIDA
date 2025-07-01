@@ -14,6 +14,7 @@ import { useSearchParams } from 'next/navigation';
 import FixedNavBar from '@/components/FixedNavBar';
 import RightDrawer from '@/components/RightDrawer';
 import DishCard from '@/components/DishCard';
+import Loading from '@/components/Loading';
 
 // Importa el tema custom
 import { getCustomTheme } from '@/components/MUI/CustomTheme';
@@ -45,48 +46,43 @@ export default function Home() {
   // Estado para los promedios de los alimentos filtrados
   const [alimentosRatings, setAlimentosRatings] = React.useState<{ [id: number]: number }>({});
 
-  React.useEffect(() => {
-      const fetchAlimentos = async () => {
-        try {
-          if (!tipo) return;
-          const res = await fetch('/api/alimentos/filtrar',{
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ categoria: tipo })
-          });
-
-          const data = await res.json();
-  
-          if (data.success) { 
-            setAlimentos(data.data);
-          }
-        } catch (error) {
-          console.error("Error al cargar los alimentos: " + error);
-        }
-      };
-      fetchAlimentos();
-    }, []);
+  // Estado de carga
+  const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
-    if (alimentos.length === 0) return;
-    const fetchRatings = async () => {
+    const fetchAll = async () => {
       try {
-        const ids = alimentos.map(a => a.id_alimento);
-        const res = await fetch('/api/alimentos/calificacion', {
+        if (!tipo) return;
+        const res = await fetch('/api/alimentos/filtrar',{
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ids })
+          body: JSON.stringify({ categoria: tipo })
         });
         const data = await res.json();
-        if (data.success && data.ratings) {
-          setAlimentosRatings(data.ratings);
+        if (data.success) {
+          setAlimentos(data.data);
+          if (data.data.length > 0) {
+            const ids = data.data.map((a: any) => a.id_alimento);
+            const res2 = await fetch('/api/alimentos/calificacion', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ ids })
+            });
+            const data2 = await res2.json();
+            if (data2.success && data2.ratings) setAlimentosRatings(data2.ratings);
+          }
         }
-      } catch {}
+      } catch (error) {
+        console.error("Error al cargar los alimentos: " + error);
+      } finally {
+        setLoading(false);
+      }
     };
-    fetchRatings();
-  }, [alimentos]);
+    fetchAll();
+  }, [tipo]);
 
   if (!mounted) return null;
+  if (loading) return <Loading />;
 
   return (
     <ThemeProvider theme={theme}>

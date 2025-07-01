@@ -21,6 +21,8 @@ import DishCard from '@/components/DishCard';
 // Tema personalizado
 import { getCustomTheme } from '@/components/MUI/CustomTheme';
 
+import Loading from '@/components/Loading'
+
 // Colección de información
 const TipoAlimento = [
   { nombre: "Desayunos", imagen: "/icons/Desayuno.webp", link: "/filtrar?tipo=Desayuno" },
@@ -73,117 +75,73 @@ export default function Home() {
   // Estado para los promedios de todos los alimentos
   const [alimentosRatings, setAlimentosRatings] = React.useState<{ [id: number]: number }>({});
 
+  // Estado de carga
+  const [loading, setLoading] = React.useState(true);
+
   // Navegación
   const router = useRouter();
 
   React.useEffect(() => {
     if (!mounted) return;
-    const fetchMejorCalificados = async () => {
+    setLoading(true);
+    const fetchAll = async () => {
       try {
-        const res = await fetch('/api/alimentos/mejor-calificados');
-        const data = await res.json();
-        if (data.success) {
-          setMejorCalificados(data.data);
+        // 1. Mejor calificados
+        const mejorRes = await fetch('/api/alimentos/mejor-calificados');
+        const mejorData = await mejorRes.json();
+        if (mejorData.success) setMejorCalificados(mejorData.data);
+
+        // 2. Favoritos
+        const favRes = await fetch('/api/alimentos/favoritos');
+        const favData = await favRes.json();
+        if (favData.success) setFavoritos(favData.data);
+
+        // 3. Alimentos
+        const aliRes = await fetch('/api/alimentos');
+        const aliData = await aliRes.json();
+        if (aliData.success) setAlimentos(aliData.data);
+
+        // 4. Ratings favoritos
+        if (favData.success && favData.data.length > 0) {
+          const ids = favData.data.map((a: any) => a.id_alimento);
+          const res = await fetch('/api/alimentos/calificacion', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ids })
+          });
+          const data = await res.json();
+          if (data.success && data.ratings) setFavoritosRatings(data.ratings);
         }
-      } catch (error) {
-        // Silenciar error
+        // 5. Ratings mejor calificados
+        if (mejorData.success && mejorData.data.length > 0) {
+          const ids = mejorData.data.map((a: any) => a.id_alimento);
+          const res = await fetch('/api/alimentos/calificacion', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ids })
+          });
+          const data = await res.json();
+          if (data.success && data.ratings) setMejorCalificadosRatings(data.ratings);
+        }
+        // 6. Ratings alimentos
+        if (aliData.success && aliData.data.length > 0) {
+          const ids = aliData.data.map((a: any) => a.id_alimento);
+          const res = await fetch('/api/alimentos/calificacion', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ids })
+          });
+          const data = await res.json();
+          if (data.success && data.ratings) setAlimentosRatings(data.ratings);
+        }
+      } catch (e) {
+        // Manejo de error opcional
+      } finally {
+        setLoading(false);
       }
     };
-    fetchMejorCalificados();
+    fetchAll();
   }, [mounted]);
-
-  React.useEffect(() => {
-    // Solo consulta si está montado
-    if (!mounted) return;
-    const fetchFavoritos = async () => {
-      try {
-        const res = await fetch('/api/alimentos/favoritos');
-        const data = await res.json();
-        if (data.success) {
-          setFavoritos(data.data);
-        }
-      } catch (error) {
-        // Silenciar error si no está autenticado
-      }
-    };
-    fetchFavoritos();
-  }, [mounted]);
-
-  React.useEffect(() => {
-    // Solo consulta si no se ha hecho antes
-    if (alimentosFetched.current) return;
-    alimentosFetched.current = true;
-    const fetchAlimentos = async () => {
-      try {
-        const res = await fetch('/api/alimentos');
-        const data = await res.json();
-
-        if (data.success) { 
-          setAlimentos(data.data);
-        }
-      } catch (error) {
-        console.error("Error al cargar los alimentos: " + error);
-      }
-    };
-    fetchAlimentos();
-  }, []);
-
-  React.useEffect(() => {
-    if (favoritos.length === 0) return;
-    const fetchRatings = async () => {
-      try {
-        const ids = favoritos.map(a => a.id_alimento);
-        const res = await fetch('/api/alimentos/calificacion', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ids })
-        });
-        const data = await res.json();
-        if (data.success && data.ratings) {
-          setFavoritosRatings(data.ratings);
-        }
-      } catch {}
-    };
-    fetchRatings();
-  }, [favoritos]);
-
-  React.useEffect(() => {
-    if (mejorCalificados.length === 0) return;
-    const fetchRatings = async () => {
-      try {
-        const ids = mejorCalificados.map(a => a.id_alimento);
-        const res = await fetch('/api/alimentos/calificacion', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ids })
-        });
-        const data = await res.json();
-        if (data.success && data.ratings) {
-          setMejorCalificadosRatings(data.ratings);
-        }
-      } catch {}
-    };
-    fetchRatings();
-  }, [mejorCalificados]);
-
-  React.useEffect(() => {
-    if (alimentos.length === 0) return;
-    const fetchRatings = async () => {
-      try {
-        const ids = alimentos.map(a => a.id_alimento);
-        const res = await fetch('/api/alimentos/calificacion', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ids })
-        });
-        const data = await res.json();
-        if (data.success && data.ratings) {
-          setAlimentosRatings(data.ratings);
-        }
-      } catch {}
-    };
-    fetchRatings();
-  }, [alimentos]);
 
   // Componente que renderiza cada una de las opciones
   interface TipoAlimentoItem {
@@ -205,6 +163,7 @@ export default function Home() {
   );
 
   if (!mounted) return null;
+  if (loading) return <Loading />;
 
   return (
     <ThemeProvider theme={theme}>

@@ -13,6 +13,7 @@ import DoneAllIcon from '@mui/icons-material/DoneAll';
 // Importa los componentes custom
 import FixedNavBar from '@/components/FixedNavBar';
 import RightDrawer from '@/components/RightDrawer';
+import Loading from '@/components/Loading';
 
 // Importa el tema custom
 import { getCustomTheme } from '@/components/MUI/CustomTheme';
@@ -148,6 +149,7 @@ export default function Home() {
     const pastOrders = orders.filter(order => order.estatus === 'Entregado');
 
     if (!mounted) return null;
+    if (loading) return <Loading />;
 
     return (
       <ThemeProvider theme={theme}>
@@ -200,9 +202,7 @@ export default function Home() {
 
           {/* Panel de Órdenes "En progreso" */}
           <CustomTabPanel value={value} index={0}>
-            {loading ? (
-              <Typography>Cargando...</Typography>
-            ) : inProgressOrders.length === 0 ? (
+            {inProgressOrders.length === 0 ? (
               <Typography>No hay órdenes en progreso.</Typography>
             ) : (
               <List
@@ -246,9 +246,7 @@ export default function Home() {
           
           {/* Panel de Órdenes "Pasadas" */}
           <CustomTabPanel value={value} index={1}>
-            {loading ? (
-              <Typography>Cargando...</Typography>
-            ) : pastOrders.length === 0 ? (
+            {pastOrders.length === 0 ? (
               <Typography>No hay órdenes pasadas.</Typography>
             ) : (
               <List

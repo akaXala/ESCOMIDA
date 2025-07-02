@@ -17,6 +17,8 @@ import FormatListBulletedAddIcon from '@mui/icons-material/FormatListBulletedAdd
 import MenuBookIcon from '@mui/icons-material/MenuBook'; // Para "Modificar menú"
 import LogoutIcon from '@mui/icons-material/Logout'; // Para "Cerrar Sesión"
 
+type NavItem = 'preparar' | 'menu-del-dia' | 'modificar-menu';
+
 export default function Home() {
     // Estado para saber si estamos en el cliente
     const [mounted, setMounted] = React.useState(false);
@@ -28,8 +30,24 @@ export default function Home() {
 
     // Sesiones Clerk
     const { isSignedIn, signOut } = useAuth();
+
     // Navegación Next.js
     const router = useRouter();
+
+    // Navegación botones
+    const handleNavChange = (newValue: NavItem) => {
+        switch (newValue) {
+            case 'preparar':
+                router.push("/cocina/preparar");
+                break;
+            case 'menu-del-dia':
+                router.push("/cocina/menu-del-dia");
+                break;
+            case 'modificar-menu':
+                router.push("/cocina/modificar-menu");
+                break;                
+        }
+    }
 
     // Cerrar sesión
     const handleSignOut = async () => {
@@ -70,6 +88,7 @@ export default function Home() {
                         color="primary" 
                         startIcon={<RestaurantMenuIcon />}
                         sx={buttonStyle}
+                        onClick={() => handleNavChange('preparar')}
                     >
                         Preparar
                     </Button>
@@ -78,6 +97,7 @@ export default function Home() {
                         color="primary"
                         startIcon={<FormatListBulletedAddIcon />}
                         sx={buttonStyle}
+                        onClick={() => handleNavChange('menu-del-dia')}
                     >
                         Modificar menú del día
                     </Button>
@@ -86,6 +106,7 @@ export default function Home() {
                         color="primary"
                         startIcon={<MenuBookIcon />}
                         sx={buttonStyle}
+                        onClick={() => handleNavChange('modificar-menu')}
                     >
                         Modificar menú
                     </Button>

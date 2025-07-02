@@ -4,7 +4,7 @@
 import * as React from 'react';
 import {
     Box, Typography, Grid, Card, CardContent, CardActions, Button, useTheme,
-    Dialog, DialogTitle, DialogContent, DialogActions, TextField // Import Dialog components and TextField
+    Dialog, DialogTitle, DialogContent, DialogActions // Import Dialog components
 } from '@mui/material';
 import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
@@ -14,30 +14,28 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 export default function NewOrdersSection({ newOrders, onAcceptOrder, onRejectOrder }) {
     const theme = useTheme();
 
-    // State for the accept order dialog
-    const [openAcceptDialog, setOpenAcceptDialog] = React.useState(false);
+    // State for the confirmation dialog
+    const [openConfirmDialog, setOpenConfirmDialog] = React.useState(false);
     const [selectedOrderId, setSelectedOrderId] = React.useState(null);
-    const [estimatedTimeInput, setEstimatedTimeInput] = React.useState('');
 
-    // Handle opening the dialog
-    const handleOpenAcceptDialog = (orderId) => {
+    // Handle opening the confirmation dialog
+    const handleOpenConfirmDialog = (orderId) => {
         setSelectedOrderId(orderId);
-        setEstimatedTimeInput(''); // Reset input when opening
-        setOpenAcceptDialog(true);
+        setOpenConfirmDialog(true);
     };
 
-    // Handle closing the dialog
-    const handleCloseAcceptDialog = () => {
-        setOpenAcceptDialog(false);
+    // Handle closing the confirmation dialog
+    const handleCloseConfirmDialog = () => {
+        setOpenConfirmDialog(false);
         setSelectedOrderId(null);
-        setEstimatedTimeInput('');
     };
 
-    // Handle confirming the acceptance with the time
+    // Handle confirming the acceptance
     const handleConfirmAccept = () => {
-        if (selectedOrderId && estimatedTimeInput.trim() !== '') {
-            onAcceptOrder(selectedOrderId, estimatedTimeInput.trim());
-            handleCloseAcceptDialog();
+        if (selectedOrderId) {
+            // Call the onAcceptOrder function passed from the parent
+            onAcceptOrder(selectedOrderId);
+            handleCloseConfirmDialog(); // Close dialog after action
         }
     };
 
@@ -63,8 +61,13 @@ export default function NewOrdersSection({ newOrders, onAcceptOrder, onRejectOrd
                                         **Platillo:** {order.food}
                                     </Typography>
                                     <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center' }}>
-                                        {/* Original estimated time from the order, if available, or just a placeholder */}
                                         <AccessTimeIcon sx={{ fontSize: 16, mr: 0.5 }} /> Solicitado para: **{order.requestedTime || 'Pronto'}**
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary">
+                                        Teléfono: {order.telefono || 'N/A'}
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary">
+                                        Total: ${order.precioTotal ? order.precioTotal.toFixed(2) : '0.00'}
                                     </Typography>
                                 </CardContent>
                                 <CardActions sx={{ justifyContent: 'flex-end', p: 2, borderTop: `1px solid ${theme.palette.divider}` }}>
@@ -72,8 +75,8 @@ export default function NewOrdersSection({ newOrders, onAcceptOrder, onRejectOrd
                                         variant="contained"
                                         color="success"
                                         startIcon={<CheckCircleOutlineIcon />}
-                                        // Change: Open dialog instead of directly accepting
-                                        onClick={() => handleOpenAcceptDialog(order.id)}
+                                        // Changed: Open confirmation dialog instead of directly accepting
+                                        onClick={() => handleOpenConfirmDialog(order.id)}
                                         sx={{ mr: 1 }}
                                     >
                                         Aceptar
@@ -99,31 +102,25 @@ export default function NewOrdersSection({ newOrders, onAcceptOrder, onRejectOrd
                 )}
             </Grid>
 
-            {/* Accept Order Dialog */}
-            <Dialog open={openAcceptDialog} onClose={handleCloseAcceptDialog} fullWidth maxWidth="xs">
-                <DialogTitle>Especificar Tiempo de Entrega</DialogTitle>
+            {/* Confirmation Dialog */}
+            <Dialog
+                open={openConfirmDialog}
+                onClose={handleCloseConfirmDialog}
+                aria-labelledby="confirm-accept-dialog-title"
+                aria-describedby="confirm-accept-dialog-description"
+            >
+                <DialogTitle id="confirm-accept-dialog-title">{"Confirmar Aceptación de Pedido"}</DialogTitle>
                 <DialogContent>
-                    <Typography variant="body1" sx={{ mb: 2 }}>
-                        Ingresa el tiempo estimado para el pedido **#{selectedOrderId}**:
+                    <Typography id="confirm-accept-dialog-description">
+                        ¿Estás seguro de que quieres aceptar el **Pedido #{selectedOrderId}** y marcarlo como "Cocinando"?
                     </Typography>
-                    <TextField
-                        autoFocus
-                        margin="dense"
-                        id="estimated-time"
-                        label="Tiempo (ej. 20 min, 1 hora)"
-                        type="text"
-                        fullWidth
-                        variant="outlined"
-                        value={estimatedTimeInput}
-                        onChange={(e) => setEstimatedTimeInput(e.target.value)}
-                    />
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleCloseAcceptDialog} color="error">
+                    <Button onClick={handleCloseConfirmDialog} color="error">
                         Cancelar
                     </Button>
-                    <Button onClick={handleConfirmAccept} color="success" disabled={!estimatedTimeInput.trim()}>
-                        Confirmar
+                    <Button onClick={handleConfirmAccept} color="success" autoFocus>
+                        Aceptar
                     </Button>
                 </DialogActions>
             </Dialog>

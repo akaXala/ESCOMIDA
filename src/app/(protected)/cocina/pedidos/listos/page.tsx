@@ -257,11 +257,11 @@ export default function Home() {
                 )}
 
                 {/* New Orders Section: For 'En espera' orders */}
-                <NewOrdersSection
-                    newOrders={newOrders}
-                    onAcceptOrder={handleAcceptOrder}
-                    onRejectOrder={handleRejectOrder}
+                <PendingOrdersSection
+                    pendingOrders={pendingOrders}
+                    onCompleteOrder={handleCompleteOrder}
                 />
+              
 
                 {/* Pending Orders Section: For 'Cocinando' and 'Listo para entregar' orders */}
             

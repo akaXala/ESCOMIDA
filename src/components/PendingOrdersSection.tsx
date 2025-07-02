@@ -1,57 +1,70 @@
-// components/kitchen/PendingOrdersSection.jsx
-"use client";
+import React from 'react';
+import { Box, Typography, Card, CardContent, Button, Grid } from '@mui/material';
 
-import * as React from 'react';
-import { Box, Typography, Grid, Card, CardContent, CardActions, Button, useTheme } from '@mui/material';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
-
+// Este componente recibe 'pendingOrders' y 'onCompleteOrder'
 export default function PendingOrdersSection({ pendingOrders, onCompleteOrder }) {
-    const theme = useTheme();
-
     return (
-        <Box mb={6}>
-            <Typography variant="h5" component="h2" gutterBottom sx={{ color: theme.palette.text.primary, borderBottom: `2px solid ${theme.palette.secondary.main}`, pb: 1, mb: 3 }}>
-                <AccessTimeIcon sx={{ verticalAlign: 'middle', mr: 1 }} /> Pedidos Pendientes
+        <Box sx={{ mt: 5, mb: 5 }}>
+            <Typography variant="h5" component="h2" gutterBottom align="center">
+                Pedidos en Preparación y Listos para Entregar
             </Typography>
-            <Grid container spacing={3}>
-                {pendingOrders.length > 0 ? (
+            <Grid container spacing={3} justifyContent="center">
+                {pendingOrders.length === 0 ? (
+                    <Typography variant="subtitle1" color="text.secondary" sx={{ mt: 3 }}>
+                        No hay pedidos en preparación o listos para entregar en este momento.
+                    </Typography>
+                ) : (
                     pendingOrders.map((order) => (
                         <Grid item xs={12} sm={6} md={4} key={order.id}>
-                            <Card sx={{
-                                display: 'flex', flexDirection: 'column', height: '100%',
-                                backgroundColor: theme.palette.background.paper, boxShadow: 3,
-                                borderLeft: `5px solid ${theme.palette.secondary.main}`,
-                                transition: 'transform 0.2s ease-in-out', '&:hover': { transform: 'translateY(-3px)' }
-                            }}>
+                            <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
                                 <CardContent sx={{ flexGrow: 1 }}>
-                                    <Typography variant="h6" component="div" sx={{ color: theme.palette.secondary.main, mb: 1 }}>
+                                    <Typography variant="h6" component="div" gutterBottom>
                                         Pedido #{order.id}
                                     </Typography>
-                                    <Typography variant="body1" color="text.primary" sx={{ mb: 1 }}>
-                                        **Platillo:** {order.food}
+                                    <Typography variant="body1" color="text.secondary">
+                                        Estado: **{order.status}**
                                     </Typography>
-                                    <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center' }}>
-                                        <AccessTimeIcon sx={{ fontSize: 16, mr: 0.5 }} /> Tiempo de preparación restante: **{order.estimatedTime}**
+                                    <Typography variant="body2" color="text.primary" sx={{ mt: 1 }}>
+                                        Pedido: {order.food}
                                     </Typography>
+                                    <Typography variant="body2" color="text.secondary">
+                                        Teléfono: {order.telefono || 'N/A'}
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary">
+                                        Total: ${order.precioTotal ? order.precioTotal.toFixed(2) : '0.00'}
+                                    </Typography>
+                                    {/*
+                                    // ELIMINADO: No se muestra la hora estimada
+                                    <Typography variant="body2" color="text.secondary">
+                                        Tiempo Estimado: {order.estimatedTime}
+                                    </Typography>
+                                    */}
                                 </CardContent>
-                                <CardActions sx={{ justifyContent: 'flex-end', p: 2, borderTop: `1px solid ${theme.palette.divider}` }}>
-                                    <Button
-                                        variant="contained"
-                                        color="info"
-                                        onClick={() => onCompleteOrder(order.id)}
-                                    >
-                                        Marcar como completado
-                                    </Button>
-                                </CardActions>
+                                <Box sx={{ p: 2, pt: 0 }}>
+                                    {order.status === 'Cocinando' && (
+                                        <Button
+                                            variant="contained"
+                                            color="primary"
+                                            fullWidth
+                                            onClick={() => onCompleteOrder(order.id)}
+                                        >
+                                            Marcar como Listo
+                                        </Button>
+                                    )}
+                                    {order.status === 'Listo para entregar' && (
+                                        <Button
+                                            variant="outlined"
+                                            color="success"
+                                            fullWidth
+                                            disabled // Deshabilitar si ya está listo, se asume que otra parte lo "entrega"
+                                        >
+                                            Listo para Entregar
+                                        </Button>
+                                    )}
+                                </Box>
                             </Card>
                         </Grid>
                     ))
-                ) : (
-                    <Grid item xs={12}>
-                        <Typography variant="body1" align="center" color="text.secondary">
-                            No hay pedidos pendientes en este momento. ¡Buen trabajo!
-                        </Typography>
-                    </Grid>
                 )}
             </Grid>
         </Box>

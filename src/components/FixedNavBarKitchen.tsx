@@ -18,6 +18,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import { Logout } from '@mui/icons-material';
 import { List } from '@mui/icons-material';
+import LocalShipping from '@mui/icons-material/LocalShipping';
 
 // Componente custom
 import ModalSearch from '@/components/ModalSearch';
@@ -62,8 +63,16 @@ const FixedNavBarKitchen: React.FC<FixedNavBarProps> = ({  onListOrdersListClick
     };
     const handleOrdersClick = () => {
       setSelectedTab('orders');
-      router.push("/ordene")
+      router.push("/cocina/pedidos")
     };
+    const handleEntregasClick= () => {
+      setSelectedTab('entregas');
+      router.push("/cocina/entregas");
+    }
+    const handlePedidosListos =() =>{
+      setSelectedTab('pedidoListo');
+      router.push("/cocina/pedidos/listos");
+    }
 
     // Colores de diseño
     const buttonHoverStyle = { '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.08)' } };
@@ -149,7 +158,7 @@ const FixedNavBarKitchen: React.FC<FixedNavBarProps> = ({  onListOrdersListClick
             Inicio
           </Button>
           <Button
-            onClick={onListOrdersListClick}
+            onClick={handleOrdersClick}
             sx={getNavButtonStyle('orders')}
             startIcon={<ListAltIcon />}
           >
@@ -158,9 +167,16 @@ const FixedNavBarKitchen: React.FC<FixedNavBarProps> = ({  onListOrdersListClick
           <Button
             sx={getNavButtonStyle('search')}
             startIcon={<List />}
-            onClick={onMostPopularClick}
+            onClick={handlePedidosListos}
           >
-            Ingredientes mas Peiddos
+            Pedidos Listos
+          </Button>
+          <Button
+            sx={getNavButtonStyle('search')}
+            startIcon={<LocalShipping />}
+            onClick={handleEntregasClick}
+          >
+            Entregas
           </Button>
         </Toolbar>
       </AppBar>

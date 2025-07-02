@@ -136,24 +136,41 @@ export default function Home() {
     };
 
     // Handles rejecting a new order (removes it from current view)
-    const handleRejectOrder = async (orderId) => {
-        // Optimistic UI update: remove from the list
-        setAllOrders(prevOrders => prevOrders.filter(order => order.id_pedido !== orderId));
-        console.log(`Order ${orderId} rejected. Removed from UI.`);
+   // Inside app/cocina/page.jsx (or .tsx)
 
-        // TODO: Decide backend behavior for rejected orders.
-        // Option 1: Update status to 'Rechazado' via a new PUT endpoint:
-        // Consider creating /api/ordenes/rechazado/:id
-        // try {
-        //     const res = await fetch(`/api/ordenes/rechazado/${orderId}`, { method: 'PUT' });
-        //     const data = await res.json();
-        //     if (!data.success) {
-        //         console.error(`Backend failed to reject order ${orderId}:`, data.error);
-        //         // Optionally re-add to allOrders if backend update fails
-        //     }
-        // } catch (error) {
-        //     console.error(`Network error rejecting order ${orderId} in backend:`, error);
-        // }
+const handleRejectOrder = async (orderId: number) => {
+    // Optimistic UI update: remove from the list immediately
+    setAllOrders(prevOrders => prevOrders.filter(order => order.id_pedido !== orderId));
+    console.log(`Order ${orderId} rejected. Attempting to DELETE from backend.`);
+
+    try {
+        // Use your provided DELETE endpoint for canceling the order
+        const res = await fetch('/api/ordenes/cancelar', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                // Add Authorization header if Clerk requires it
+            },
+            body: JSON.stringify({ id_pedido: orderId }), // DELETE requests often use body for ID
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || !data.success) { // Check both response.ok and data.success
+            console.error(`Backend failed to DELETE order ${orderId}:`, data.message || data.error);
+            setError("No se pudo rechazar/cancelar el pedido: " + (data.message || data.error || "Error desconocido"));
+            // If the deletion fails on the backend, re-fetch orders to bring it back into UI sync
+            fetchOrders();
+        } else {
+            console.log(`Order ${orderId} successfully rejected/cancelled and deleted from backend.`);
+            setError(null); // Clear error on success
+        }
+    } catch (err: any) {
+        console.error(`Network error attempting to DELETE order ${orderId}:`, err);
+        setError("Error de conexión al rechazar/cancelar el pedido.");
+        // If a network error occurs, re-fetch to ensure consistency
+        fetchOrders();
+    }
     };
 
     // Handles completing a pending order (changes status from 'Cocinando' to 'Listo para entregar')

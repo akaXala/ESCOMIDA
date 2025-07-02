@@ -22,6 +22,7 @@ import DishCard from '@/components/DishCard';
 import { getCustomTheme } from '@/components/MUI/CustomTheme';
 
 import Loading from '@/components/Loading'
+import ChatAssistant from '@/components/Gemini/ChatAssistant'
 
 // Colección de información
 const TipoAlimento = [
@@ -333,6 +334,7 @@ export default function Home() {
             </Box>
           ))}
         </Box>
+        <ChatAssistant />
       </Box>
     </ThemeProvider>
   );

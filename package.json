@@ -13,6 +13,7 @@
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@fontsource/quicksand": "^5.2.7",
+    "@google/generative-ai": "^0.24.1",
     "@mui/icons-material": "^7.1.0",
     "@mui/material": "^7.1.1",
     "motion": "^12.16.0",
